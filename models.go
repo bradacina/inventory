@@ -3,7 +3,7 @@ package main
 type User struct {
 	ID       int    `storm:"id,increment"`
 	Email    string `storm:"unique"`
-	Password string
+	Password []byte
 }
 
 type Item struct {

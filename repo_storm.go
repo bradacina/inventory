@@ -10,11 +10,11 @@ type stormInventoryRepo struct {
 	db *storm.DB
 }
 
-func newUserRepo(db *storm.DB) *stormUserRepo {
+func newUserRepo(db *storm.DB) UserRepoer {
 	return &stormUserRepo{db: db}
 }
 
-func newInventoryRepo(db *storm.DB) *stormInventoryRepo {
+func newInventoryRepo(db *storm.DB) InventoryRepoer {
 	return &stormInventoryRepo{db: db}
 }
 

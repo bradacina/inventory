@@ -80,7 +80,7 @@ func TestUserRepo(t *testing.T) {
 		os.Remove("test.db")
 	}()
 
-	user := User{Email: "test@email.com", Password: "123"}
+	user := User{Email: "test@email.com", Password: []byte("123")}
 
 	ur := newUserRepo(db)
 
@@ -127,7 +127,7 @@ func TestInventoryRepo(t *testing.T) {
 		os.Remove("test.db")
 	}()
 
-	user := User{Email: "test@email.com", Password: "123"}
+	user := User{Email: "test@email.com", Password: []byte("123")}
 
 	ur := newUserRepo(db)
 
