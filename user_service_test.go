@@ -101,7 +101,7 @@ func TestMultiThreading(t *testing.T) {
 
 	us := NewUserServiceFromDB(db)
 
-	numRoutines := 7000
+	numRoutines := 5000
 
 	register := func(id int) {
 		us.RegisterUser("email"+strconv.Itoa(id), "password")
@@ -154,6 +154,9 @@ func TestMultiThreading(t *testing.T) {
 
 	for i := 0; i < numRoutines; i++ {
 		go getByEmail(i)
+	}
+
+	for i := 0; i < numRoutines; i++ {
 		go getByID(i + 1)
 		go update(i)
 	}

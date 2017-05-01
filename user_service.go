@@ -12,7 +12,7 @@ type UserServicer interface {
 	GetByEmail(email string) (*User, error)
 	GetByID(id int) (*User, error)
 	ValidateCredentials(email, password string) (bool, error)
-	Update(*User)
+	Update(*User) error
 }
 
 var (
@@ -83,6 +83,19 @@ func (us *userService) ValidateCredentials(email, password string) (bool, error)
 	return true, nil
 }
 
-func (us *userService) Update(user *User) {
-	us.Update(user)
+func (us *userService) Update(user *User) error {
+	existing, err := us.userRepo.GetByID(user.ID)
+	if err != nil {
+		return err
+	}
+
+	if existing.Email != user.Email {
+		_, err := us.userRepo.GetByEmail(user.Email)
+		if err == nil {
+			return ErrorEmailInUse
+		}
+	}
+
+	us.userRepo.Upsert(user)
+	return nil
 }
