@@ -15,4 +15,9 @@ func main() {
 
 	userRepo := newUserRepo(dbMain)
 	invRepo := newInventoryRepo(dbMain)
+
+	user, _ := userRepo.GetByEmail("bogdan@email.com")
+	invs := invRepo.GetAll()
+
+	log.Print(user, invs)
 }
