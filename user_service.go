@@ -12,6 +12,7 @@ type UserServicer interface {
 	GetByEmail(email string) (*User, error)
 	GetByID(id int) (*User, error)
 	ValidateCredentials(email, password string) (bool, error)
+	Update(*User)
 }
 
 var (
@@ -80,4 +81,8 @@ func (us *userService) ValidateCredentials(email, password string) (bool, error)
 	}
 
 	return true, nil
+}
+
+func (us *userService) Update(user *User) {
+	us.Update(user)
 }
