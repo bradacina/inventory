@@ -1,0 +1,19 @@
+{{template "header.html"}}
+
+<form method="POST" action="/register">
+    <label>Email</label>
+    <input name="email" type="email" />
+
+    <label>Confirm Email</label>
+    <input name="email2" type="email" />
+
+    <label>Password</label>
+    <input name="password" type="password" />
+
+    <label>Confirm Password</label>
+    <input name="password2" type="password" />
+    
+    <input type="submit" value="Register" />
+</form>
+
+{{template "footer.html"}}
