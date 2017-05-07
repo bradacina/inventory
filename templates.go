@@ -21,8 +21,8 @@ func init() {
 	globalTemplate = tmpl
 }
 
-func serveTemplate(w http.ResponseWriter, name string) {
-	err := globalTemplate.ExecuteTemplate(w, name, nil)
+func serveTemplate(w http.ResponseWriter, name string, values interface{}) {
+	err := globalTemplate.ExecuteTemplate(w, name, values)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

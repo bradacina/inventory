@@ -1,11 +1,12 @@
 {{template "header.html"}}
 
 <form method="POST" action="/register">
+    {{range .Errors}} <li>{{.}}</li>{{end}}
     <label>Email</label>
-    <input name="email" type="email" />
+    <input name="email" type="email" value="{{.Email}}" />
 
     <label>Confirm Email</label>
-    <input name="email2" type="email" />
+    <input name="email2" type="email" value="{{.Email2}}" />
 
     <label>Password</label>
     <input name="password" type="password" />

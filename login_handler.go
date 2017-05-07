@@ -6,7 +6,7 @@ import (
 
 func login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		serveTemplate(w, TemplateLogin)
+		serveTemplate(w, TemplateLogin, nil)
 	} else if r.Method == http.MethodPost {
 
 	} else {
