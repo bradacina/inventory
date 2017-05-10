@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-func init() {
+func registerRoutes(app *app) {
 	log.Println("Setting up routes...")
-	http.HandleFunc("/register", register)
-	http.HandleFunc("/login", login)
+	http.HandleFunc("/register", app.register)
+	http.HandleFunc("/login", app.login)
 	log.Println("Done")
 }

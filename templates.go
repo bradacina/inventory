@@ -4,9 +4,11 @@ import "html/template"
 import "log"
 import "net/http"
 
+type templateName string
+
 const (
-	TemplateLogin    = "login.html"
-	TemplateRegister = "register.html"
+	TemplateLogin    templateName = "login.html"
+	TemplateRegister templateName = "register.html"
 )
 
 var (
@@ -21,8 +23,8 @@ func init() {
 	globalTemplate = tmpl
 }
 
-func serveTemplate(w http.ResponseWriter, name string, values interface{}) {
-	err := globalTemplate.ExecuteTemplate(w, name, values)
+func serveTemplate(w http.ResponseWriter, name templateName, values interface{}) {
+	err := globalTemplate.ExecuteTemplate(w, string(name), values)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

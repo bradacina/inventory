@@ -33,7 +33,7 @@ type registerFormFeedback struct {
 	Errors []string
 }
 
-func register(w http.ResponseWriter, r *http.Request) {
+func (app *app) register(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		serveTemplate(w, TemplateRegister, nil)
 
@@ -44,9 +44,14 @@ func register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Println("New Registration:", regForm)
+		err := app.userService.RegisterUser(regForm.Email, regForm.Password)
+		if err != nil {
+			feedback := registerFormFeedback{Errors: []string{"That email is already in use"}}
+			serveTemplate(w, TemplateRegister, feedback)
+		}
 
-		// TODO: register in database
+		log.Println("New Registration:", regForm)
+		// TODO: redirect to account
 	} else {
 		http.NotFound(w, r)
 	}
@@ -116,9 +121,4 @@ func registrationValidation(regForm *registerForm) *registerFormFeedback {
 	}
 
 	return nil
-}
-
-func stripPassword(regForm *registerForm) {
-	regForm.Password = ""
-	regForm.Password2 = ""
 }

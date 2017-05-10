@@ -1,6 +1,8 @@
 package main
 
-import "github.com/asdine/storm"
+import (
+	"github.com/asdine/storm"
+)
 
 type stormUserRepo struct {
 	db *storm.DB
