@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"hash"
 	"io"
 	"log"
 	"net/http"
@@ -26,9 +25,6 @@ type cookieHelper struct {
 	domain  string
 	hmacKey []byte
 	aesKey  []byte
-
-	hmac hash.Hash
-	aes  cipher.Block
 }
 
 type loginInfo struct {
@@ -55,9 +51,9 @@ func serializeLoginInfo(info *loginInfo) []byte {
 }
 
 func deserializeLoginInfo(serialized []byte) *loginInfo {
-	for i := len(serialized); i >= 0; i-- {
+	for i := len(serialized) - 1; i >= 0; i-- {
 		if serialized[i] != Padding {
-			serialized = serialized[:i]
+			serialized = serialized[:i+1]
 			break
 		}
 	}
