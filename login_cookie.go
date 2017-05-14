@@ -177,7 +177,6 @@ func (ch *cookieHelper) setLoginCookie(w http.ResponseWriter, loginInfo *loginIn
 		MaxAge:   CookieLifetime,
 		HttpOnly: true,
 		Name:     LoginCookieName,
-		Path:     "/",
 		Secure:   true,
 		Value:    value}
 
@@ -185,13 +184,13 @@ func (ch *cookieHelper) setLoginCookie(w http.ResponseWriter, loginInfo *loginIn
 }
 
 func (ch *cookieHelper) getLoginCookie(r *http.Request) *loginInfo {
+	log.Println(r.Header)
 	cookie, err := r.Cookie(LoginCookieName)
 	if err != nil {
 		log.Panicln("Request did not contain the login cookie")
 	}
 
-	if cookie.Domain != ch.domain ||
-		cookie.Path != "/" {
+	if cookie.Domain != ch.domain {
 		log.Panicln("Request did not contain the login cookie")
 	}
 
@@ -206,7 +205,6 @@ func (ch *cookieHelper) deleteLoginCookie(w http.ResponseWriter) {
 		MaxAge:   CookieExpire,
 		HttpOnly: true,
 		Name:     LoginCookieName,
-		Path:     "/",
 		Secure:   true}
 
 	http.SetCookie(w, &cookie)

@@ -33,9 +33,8 @@ func (app *app) login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// TODO: set header and redirect
-		w.Header().Add("Location", "http://google.com")
-		w.WriteHeader(http.StatusFound)
+		app.cookieHelper.setLoginCookie(w, &loginInfo{form.Email})
+		http.Redirect(w, r, "/secure", http.StatusFound)
 
 	} else {
 		http.NotFound(w, r)

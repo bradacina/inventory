@@ -12,6 +12,7 @@ type app struct {
 	userRepo      UserRepoer
 	inventoryRepo InventoryRepoer
 	userService   UserServicer
+	cookieHelper  *cookieHelper
 }
 
 func newApp() *app {
@@ -25,11 +26,16 @@ func newApp() *app {
 
 	userService := NewUserService(userRepo)
 
+	cookieHelper := cookieHelper{"test.dev",
+		[]byte("what a secret123"),
+		[]byte("silent night all")}
+
 	return &app{
 		db,
 		userRepo,
 		inventoryRepo,
-		userService}
+		userService,
+		&cookieHelper}
 }
 
 func main() {
