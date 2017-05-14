@@ -62,6 +62,11 @@ func deserializeLoginInfo(serialized []byte) *loginInfo {
 }
 
 func (ch *cookieHelper) encrypt(content []byte) []byte {
+
+	if len(content)%aes.BlockSize != 0 {
+		log.Panic("Content to encrypt is not a multiple of aes.BlockSize")
+	}
+
 	block, err := aes.NewCipher(ch.aesKey)
 	if err != nil {
 		log.Panicln("Could not create aes cipher", err)
