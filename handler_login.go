@@ -15,6 +15,13 @@ type loginFormFeedback struct {
 }
 
 func (app *app) login(w http.ResponseWriter, r *http.Request) {
+	li, err := app.cookieHelper.getLoginCookie(r)
+	if err == nil {
+		app.cookieHelper.setLoginCookie(w, li)
+		http.Redirect(w, r, "/secure", http.StatusSeeOther)
+		return
+	}
+
 	if r.Method == http.MethodGet {
 		serveTemplate(w, TemplateLogin, nil)
 	} else if r.Method == http.MethodPost {

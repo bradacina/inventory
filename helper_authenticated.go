@@ -20,10 +20,16 @@ func (app *app) authenticatedHandleFunc(handlerFunc http.HandlerFunc) http.Handl
 
 func makeHandler(app *app, handlerFunc http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		loginInfo := app.cookieHelper.getLoginCookie(r)
+		loginInfo, err := app.cookieHelper.getLoginCookie(r)
+		if err != nil {
+			log.Println("Login cookie not present. Redirecting to login")
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
 		user, err := app.userService.GetByEmail(loginInfo.Username)
 		if err != nil {
 			log.Println("Login cookie contained non existant username")
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 

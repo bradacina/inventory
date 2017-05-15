@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -19,6 +20,10 @@ const (
 	CookieExpire    = -1
 
 	Padding byte = 255
+)
+
+var (
+	ErrorNoLoginCookie = errors.New("No Login Cookie")
 )
 
 type cookieHelper struct {
@@ -183,15 +188,22 @@ func (ch *cookieHelper) setLoginCookie(w http.ResponseWriter, loginInfo *loginIn
 	http.SetCookie(w, &cookie)
 }
 
-func (ch *cookieHelper) getLoginCookie(r *http.Request) *loginInfo {
+func (ch *cookieHelper) getLoginCookie(r *http.Request) (li *loginInfo, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			li = nil
+			err = ErrorNoLoginCookie
+		}
+	}()
+
 	cookie, err := r.Cookie(LoginCookieName)
 	if err != nil {
-		log.Panicln("Request did not contain the login cookie")
+		return nil, err
 	}
 
 	value := deserializeLoginInfo(ch.verifySignatureAndDecrypt(ch.decode(cookie.Value)))
 
-	return value
+	return value, nil
 }
 
 func (ch *cookieHelper) deleteLoginCookie(w http.ResponseWriter) {
