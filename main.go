@@ -39,11 +39,13 @@ func newApp() *app {
 }
 
 func main() {
+	log.SetFlags(log.Ldate | log.Lshortfile)
+
 	app := newApp()
 	registerRoutes(app)
 
-	log.Println("Listening at http://localhost:9080")
-	log.Fatal(http.ListenAndServe(":9080", nil))
+	log.Println("Listening at https://localhost:9080")
+	log.Fatal(http.ListenAndServeTLS(":9080", "cert/pub.key", "cert/priv.key", nil))
 
 	app.db.Close()
 }

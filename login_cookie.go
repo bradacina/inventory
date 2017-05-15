@@ -184,13 +184,8 @@ func (ch *cookieHelper) setLoginCookie(w http.ResponseWriter, loginInfo *loginIn
 }
 
 func (ch *cookieHelper) getLoginCookie(r *http.Request) *loginInfo {
-	log.Println(r.Header)
 	cookie, err := r.Cookie(LoginCookieName)
 	if err != nil {
-		log.Panicln("Request did not contain the login cookie")
-	}
-
-	if cookie.Domain != ch.domain {
 		log.Panicln("Request did not contain the login cookie")
 	}
 

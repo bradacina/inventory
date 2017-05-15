@@ -34,7 +34,7 @@ func (app *app) login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		app.cookieHelper.setLoginCookie(w, &loginInfo{form.Email})
-		http.Redirect(w, r, "/secure", http.StatusFound)
+		http.Redirect(w, r, "/secure", http.StatusSeeOther)
 
 	} else {
 		http.NotFound(w, r)
