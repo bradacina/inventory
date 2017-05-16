@@ -84,7 +84,10 @@ func TestUserRepo(t *testing.T) {
 
 	ur := newUserRepo(db)
 
-	ur.Upsert(&user)
+	err = ur.Upsert(&user)
+	if err != nil {
+		t.Error("Could not insert a new user")
+	}
 
 	if user.ID == 0 {
 		t.Errorf("Could not insert a new user record")
@@ -92,10 +95,20 @@ func TestUserRepo(t *testing.T) {
 
 	user.Email = "test2@email.com"
 
-	ur.Upsert(&user)
+	err = ur.Upsert(&user)
+	if err != nil {
+		t.Error("Could not update a user")
+	}
 
 	if user.ID != 1 {
-		t.Errorf("Could not update a user record")
+		t.Error("Could not update a user record. Expected userID to be", 1, "but was", user.ID)
+	}
+
+	user.ID = 14
+
+	err = ur.Upsert(&user)
+	if err == nil {
+		t.Error("Expected an error when updating a non existing user")
 	}
 
 	_, err = ur.GetByEmail("test2@email.com")
@@ -108,11 +121,14 @@ func TestUserRepo(t *testing.T) {
 		t.Error("Could not retrieve a user by ID, Error:", err)
 	}
 
-	ur.Upsert(&User{})
+	err = ur.Upsert(&User{})
+	if err != nil {
+		t.Error("Could not insert a new user")
+	}
 
 	allUsers := ur.GetAll()
 
-	if len(*allUsers) != 2 {
+	if len(allUsers) != 2 {
 		t.Error("Did not retrieve ALL users")
 	}
 }
@@ -131,7 +147,10 @@ func TestInventoryRepo(t *testing.T) {
 
 	ur := newUserRepo(db)
 
-	ur.Upsert(&user)
+	err = ur.Upsert(&user)
+	if err != nil {
+		t.Error("Could not insert a new user")
+	}
 
 	items := []Item{
 		Item{Barcode: "123", Quantity: 1, SKU: "123", Title: "Item 1"},
@@ -142,7 +161,10 @@ func TestInventoryRepo(t *testing.T) {
 
 	ir := newInventoryRepo(db)
 
-	ir.Upsert(&inv)
+	err = ir.Upsert(&inv)
+	if err != nil {
+		t.Error("Could not insert a new inventory")
+	}
 
 	if inv.ID == 0 {
 		t.Error("Could not insert a new inventory record")
@@ -150,10 +172,23 @@ func TestInventoryRepo(t *testing.T) {
 
 	inv.Name = "warehouse2"
 
-	ir.Upsert(&inv)
+	err = ir.Upsert(&inv)
+	if err != nil {
+		t.Error("Could not update an existing inventory")
+	}
+
 	if inv.ID != 1 {
 		t.Error("Could not update an inventory record")
 	}
+
+	inv.ID = 23
+
+	err = ir.Upsert(&inv)
+	if err == nil {
+		t.Error("Expected to not be able to update an non existing inventory")
+	}
+
+	inv.ID = 1
 
 	_, err = ir.GetByID(1)
 	if err != nil {
@@ -170,9 +205,17 @@ func TestInventoryRepo(t *testing.T) {
 		t.Error("Could not retrieve inventory by UserID, Error:", err)
 	}
 
+	_, err = ir.GetByUserID(23)
+	if err == nil {
+		t.Error("Searching inventory by random user id should error")
+	}
+
 	inv.Items[0].Barcode = "987"
 
-	ir.Upsert(&inv)
+	err = ir.Upsert(&inv)
+	if err != nil {
+		t.Error("Could not update an existing inventory")
+	}
 
 	invPt, err := ir.GetByID(1)
 	if err != nil {
@@ -183,10 +226,23 @@ func TestInventoryRepo(t *testing.T) {
 		t.Error("Inventory Items did not update correctly")
 	}
 
-	ir.Upsert(&Inventory{})
+	err = ir.Upsert(&Inventory{})
+	if err != nil {
+		t.Error("Could not insert a new inventory")
+	}
 
 	allInv := ir.GetAll()
-	if len(*allInv) != 2 {
+	if len(allInv) != 2 {
 		t.Error("Did not retrieve all inventories")
+	}
+
+	err = ir.Delete(1)
+	if err != nil {
+		t.Error("Could not delete existing inventory", err)
+	}
+
+	_, err = ir.GetByID(1)
+	if err == nil {
+		t.Error("Retrieved non existing inventory")
 	}
 }

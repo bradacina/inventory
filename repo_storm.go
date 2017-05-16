@@ -40,26 +40,26 @@ func (ur *stormUserRepo) GetByEmail(email string) (*User, error) {
 	return &user, err
 }
 
-func (ur *stormUserRepo) GetAll() *[]User {
+func (ur *stormUserRepo) GetAll() []User {
 	if ur.db == nil {
 		panic("Database is not instantiated")
 	}
 
 	var users []User
 	ur.db.All(&users)
-	return &users
+	return users
 }
 
-func (ur *stormUserRepo) Upsert(user *User) {
+func (ur *stormUserRepo) Upsert(user *User) error {
 	if ur.db == nil {
 		panic("Database is not instantiated")
 	}
 
 	if user.ID > 0 {
-		ur.db.Update(user)
-	} else {
-		ur.db.Save(user)
+		return ur.db.Update(user)
 	}
+
+	return ur.db.Save(user)
 }
 
 func (ir *stormInventoryRepo) GetByID(id int) (*Inventory, error) {
@@ -73,7 +73,7 @@ func (ir *stormInventoryRepo) GetByID(id int) (*Inventory, error) {
 	return &inventory, err
 }
 
-func (ir *stormInventoryRepo) GetByUserID(userID int) (*[]Inventory, error) {
+func (ir *stormInventoryRepo) GetByUserID(userID int) ([]Inventory, error) {
 	if ir.db == nil {
 		panic("Database is not instantiated")
 	}
@@ -81,10 +81,10 @@ func (ir *stormInventoryRepo) GetByUserID(userID int) (*[]Inventory, error) {
 	var inv []Inventory
 	err := ir.db.Find("UserID", userID, &inv)
 
-	return &inv, err
+	return inv, err
 }
 
-func (ir *stormInventoryRepo) GetByName(name string) (*[]Inventory, error) {
+func (ir *stormInventoryRepo) GetByName(name string) ([]Inventory, error) {
 	if ir.db == nil {
 		panic("Database is not instantiated")
 	}
@@ -92,27 +92,31 @@ func (ir *stormInventoryRepo) GetByName(name string) (*[]Inventory, error) {
 	var inv []Inventory
 	err := ir.db.Find("Name", name, &inv)
 
-	return &inv, err
+	return inv, err
 }
 
-func (ir *stormInventoryRepo) GetAll() *[]Inventory {
+func (ir *stormInventoryRepo) GetAll() []Inventory {
 	if ir.db == nil {
 		panic("Database is not instantiated")
 	}
 
 	var invs []Inventory
 	ir.db.All(&invs)
-	return &invs
+	return invs
 }
 
-func (ir *stormInventoryRepo) Upsert(inventory *Inventory) {
+func (ir *stormInventoryRepo) Upsert(inventory *Inventory) error {
 	if ir.db == nil {
 		panic("Database is not instantiated")
 	}
 
 	if inventory.ID > 0 {
-		ir.db.Update(inventory)
-	} else {
-		ir.db.Save(inventory)
+		return ir.db.Update(inventory)
 	}
+
+	return ir.db.Save(inventory)
+}
+
+func (ir *stormInventoryRepo) Delete(id int) error {
+	return ir.db.DeleteStruct(&Inventory{ID: id})
 }

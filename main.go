@@ -8,11 +8,12 @@ import (
 )
 
 type app struct {
-	db            *storm.DB
-	userRepo      UserRepoer
-	inventoryRepo InventoryRepoer
-	userService   UserServicer
-	cookieHelper  *cookieHelper
+	db               *storm.DB
+	userRepo         UserRepoer
+	inventoryRepo    InventoryRepoer
+	userService      UserServicer
+	inventoryService InventoryServicer
+	cookieHelper     *cookieHelper
 }
 
 func newApp() *app {
@@ -26,6 +27,8 @@ func newApp() *app {
 
 	userService := NewUserService(userRepo)
 
+	inventoryService := NewInventoryService(inventoryRepo)
+
 	cookieHelper := cookieHelper{"test.dev",
 		[]byte("what a secret123"),
 		[]byte("silent night all")}
@@ -35,6 +38,7 @@ func newApp() *app {
 		userRepo,
 		inventoryRepo,
 		userService,
+		inventoryService,
 		&cookieHelper}
 }
 

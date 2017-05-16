@@ -1,0 +1,19 @@
+
+Inventories (Edit)
+
+xxxx  View | Delete
+yyyy  View | Delete
+zzzz  View | Delete
+
+Add New Inventory
+Save
+-----------------------
+
+
+Inventory Name   (Edit)
+
+Item 1      23      Edit Name | Edit Quantity | Delete
+Item 2      15      Edit Name | Edit Quantity | Delete
+
+Add New Item
+Save
