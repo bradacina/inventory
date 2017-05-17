@@ -4,20 +4,22 @@ import "testing"
 import "github.com/asdine/storm"
 import "os"
 import "strconv"
+import "sync"
 
 const (
 	email = "test1@email.com"
 )
 
 func TestUserService(t *testing.T) {
-	db, err := storm.Open("test.db")
+	dbfile := "testUserService.db"
+	db, err := storm.Open(dbfile)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	defer func() {
 		db.Close()
-		os.Remove("test.db")
+		os.Remove(dbfile)
 	}()
 
 	us := NewUserServiceFromDB(db)
@@ -89,22 +91,26 @@ func TestUserService(t *testing.T) {
 }
 
 func TestMultiThreading(t *testing.T) {
-	db, err := storm.Open("test.db")
+	dbfile := "testMultiThreading.db"
+	db, err := storm.Open(dbfile)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	defer func() {
 		db.Close()
-		os.Remove("test.db")
+		os.Remove(dbfile)
 	}()
 
 	us := NewUserServiceFromDB(db)
 
-	numRoutines := 100
+	numRoutines := 50
+
+	waitForAll := sync.WaitGroup{}
 
 	register := func(id int) {
 		us.RegisterUser("email"+strconv.Itoa(id), "password")
+		waitForAll.Done()
 	}
 
 	getByEmail := func(id int) {
@@ -113,6 +119,7 @@ func TestMultiThreading(t *testing.T) {
 		if err != nil {
 			t.Error("Could not find user with email ", email)
 		}
+		waitForAll.Done()
 	}
 
 	getByID := func(id int) {
@@ -120,6 +127,7 @@ func TestMultiThreading(t *testing.T) {
 		if err != nil {
 			t.Error("Could not find user with id ", id)
 		}
+		waitForAll.Done()
 	}
 
 	update := func(id int) {
@@ -127,6 +135,7 @@ func TestMultiThreading(t *testing.T) {
 			if recover() != nil {
 				t.Log("Recover in id ", id)
 			}
+			waitForAll.Done()
 		}()
 
 		user, err := us.GetByID(id)
@@ -148,17 +157,23 @@ func TestMultiThreading(t *testing.T) {
 		}
 	}
 
+	waitForAll.Add(numRoutines)
 	for i := 0; i < numRoutines; i++ {
 		go register(i)
 	}
 
+	waitForAll.Wait()
+
+	waitForAll.Add(numRoutines)
 	for i := 0; i < numRoutines; i++ {
 		go getByEmail(i)
 	}
+	waitForAll.Wait()
 
+	waitForAll.Add(2 * numRoutines)
 	for i := 0; i < numRoutines; i++ {
 		go getByID(i + 1)
-		go update(i)
+		go update(i + 1)
 	}
-
+	waitForAll.Wait()
 }

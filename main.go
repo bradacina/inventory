@@ -17,7 +17,7 @@ type app struct {
 }
 
 func newApp() *app {
-	db, err := storm.Open("test.db")
+	db, err := storm.Open("inventory.db")
 	if err != nil {
 		log.Fatal(err)
 	}

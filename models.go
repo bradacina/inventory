@@ -14,8 +14,9 @@ type Item struct {
 }
 
 type Inventory struct {
-	ID     int    `storm:"id,increment"`
-	UserID int    `storm:"index"`
-	Name   string `storm:"index"`
-	Items  []Item
+	ID        int    `storm:"id,increment"`
+	UserID    int    `storm:"index"`
+	Name      string `storm:"index"`
+	Items     []Item
+	IsDeleted bool
 }

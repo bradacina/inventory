@@ -12,13 +12,14 @@ var (
 )
 
 type InventoryServicer interface {
-	CreateInventory(inventory *Inventory, userID int) error
-	UpdateInventory(inventory *Inventory) error
+	Create(inventory *Inventory, userID int) error
+	Update(inventory *Inventory) error
 
-	UpdateInventoryList(inventory []Inventory, userID int) error
+	Delete(id int, userID int) error
+	//UpdateInventoryList(inventory []Inventory, userID int) error
 
 	GetByUserID(userID int) []Inventory
-	GetById(id int) (*Inventory, error)
+	GetByID(id int) (*Inventory, error)
 }
 
 type inventoryService struct {
@@ -33,7 +34,7 @@ func NewInventoryServiceFromDB(db *storm.DB) InventoryServicer {
 	return &inventoryService{inventoryRepo: newInventoryRepo(db)}
 }
 
-func (is *inventoryService) GetById(id int) (*Inventory, error) {
+func (is *inventoryService) GetByID(id int) (*Inventory, error) {
 	return is.inventoryRepo.GetByID(id)
 }
 
@@ -46,7 +47,23 @@ func (is *inventoryService) GetByUserID(userID int) []Inventory {
 	return inventories
 }
 
-func (is *inventoryService) CreateInventory(inventory *Inventory, userID int) error {
+func (is *inventoryService) Delete(id int, userID int) error {
+	inv, err := is.inventoryRepo.GetByID(id)
+	if err != nil {
+		return nil
+	}
+
+	if inv.UserID != userID {
+		return ErrorOperationNotPermitted
+	}
+
+	inv.IsDeleted = true
+	is.inventoryRepo.Upsert(inv)
+
+	return nil
+}
+
+func (is *inventoryService) Create(inventory *Inventory, userID int) error {
 	if inventory.ID != 0 {
 		return ErrorOperationNotPermitted
 	}
@@ -61,7 +78,7 @@ func (is *inventoryService) CreateInventory(inventory *Inventory, userID int) er
 	return nil
 }
 
-func (is *inventoryService) UpdateInventory(inventory *Inventory) error {
+func (is *inventoryService) Update(inventory *Inventory) error {
 	if inventory.ID <= 0 {
 		return ErrorNotFound
 	}

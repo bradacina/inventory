@@ -71,13 +71,14 @@ func TestDbNil(t *testing.T) {
 }
 
 func TestUserRepo(t *testing.T) {
-	db, err := storm.Open("test.db")
+	dbfile := "testUserRepo.db"
+	db, err := storm.Open(dbfile)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer func() {
 		db.Close()
-		os.Remove("test.db")
+		os.Remove(dbfile)
 	}()
 
 	user := User{Email: "test@email.com", Password: []byte("123")}
@@ -134,13 +135,14 @@ func TestUserRepo(t *testing.T) {
 }
 
 func TestInventoryRepo(t *testing.T) {
-	db, err := storm.Open("test.db")
+	dbfile := "testInventoryRepo.db"
+	db, err := storm.Open(dbfile)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer func() {
 		db.Close()
-		os.Remove("test.db")
+		os.Remove(dbfile)
 	}()
 
 	user := User{Email: "test@email.com", Password: []byte("123")}
