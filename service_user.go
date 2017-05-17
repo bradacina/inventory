@@ -11,8 +11,8 @@ type UserServicer interface {
 	RegisterUser(email, password string) error
 	GetByEmail(email string) (*User, error)
 	GetByID(id int) (*User, error)
-	ValidateCredentials(email, password string) (bool, error)
-	Update(*User) error
+	ValidateCredentials(email, password string) (*User, error)
+	Update(user *User, userID int) error
 }
 
 var (
@@ -69,21 +69,35 @@ func (us *userService) GetByID(id int) (*User, error) {
 	return user, nil
 }
 
-func (us *userService) ValidateCredentials(email, password string) (bool, error) {
+func (us *userService) ValidateCredentials(email, password string) (*User, error) {
 	user, err := us.GetByEmail(email)
 	if err != nil {
-		return false, ErrorInvalidCredentials
+		return nil, ErrorInvalidCredentials
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.Password, []byte(password))
 	if err != nil {
-		return false, ErrorInvalidCredentials
+		return nil, ErrorInvalidCredentials
 	}
 
-	return true, nil
+	return user, nil
 }
 
-func (us *userService) Update(user *User) error {
+// Updates a user record
+// userID is the id of the user that's making the request
+func (us *userService) Update(user *User, userID int) error {
+	if user == nil {
+		return ErrorNotFound
+	}
+
+	if user.ID <= 0 {
+		return ErrorNotFound
+	}
+
+	if userID != 0 && userID != user.ID {
+		return ErrorNotFound
+	}
+
 	existing, err := us.userRepo.GetByID(user.ID)
 	if err != nil {
 		return err

@@ -51,12 +51,12 @@ func TestUserService(t *testing.T) {
 		t.Error("Retrieved the wrong user")
 	}
 
-	result, err := us.ValidateCredentials(email, "password1")
+	validatedUser, err := us.ValidateCredentials(email, "password1")
 	if err != nil {
 		t.Error("Cannot validate credentials")
 	}
 
-	if !result {
+	if validatedUser == nil {
 		t.Error("Wrong result when validating credentials")
 	}
 
@@ -145,7 +145,7 @@ func TestMultiThreading(t *testing.T) {
 
 		modified := user.Email + "modified"
 		user.Email = modified
-		us.Update(user)
+		us.Update(user, id)
 
 		user, err = us.GetByID(id)
 		if err != nil {

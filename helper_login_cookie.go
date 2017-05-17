@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/gob"
 	"errors"
 	"io"
 	"log"
@@ -33,12 +35,20 @@ type cookieHelper struct {
 }
 
 type loginInfo struct {
+	ID       int
 	Username string
+	IsAdmin  bool
 }
 
 func serializeLoginInfo(info *loginInfo) []byte {
-	serialized := []byte(info.Username)
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(info)
+	if err != nil {
+		log.Panic("Cannot serialize logininfo")
+	}
 
+	serialized := buf.Bytes()
 	remainder := len(serialized) % aes.BlockSize
 	if remainder == 0 {
 		return serialized
@@ -63,7 +73,12 @@ func deserializeLoginInfo(serialized []byte) *loginInfo {
 		}
 	}
 
-	return &loginInfo{Username: string(serialized)}
+	buf := bytes.NewBuffer(serialized)
+	dec := gob.NewDecoder(buf)
+	var loginInfo loginInfo
+	dec.Decode(&loginInfo)
+
+	return &loginInfo
 }
 
 func (ch *cookieHelper) encrypt(content []byte) []byte {

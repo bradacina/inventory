@@ -19,7 +19,7 @@ func TestSerializeDeserialize(t *testing.T) {
 		for j := 0; j < i; j++ {
 			s = s + "x"
 		}
-		l := loginInfo{s}
+		l := loginInfo{Username: s, ID: i, IsAdmin: true}
 		serialized := serializeLoginInfo(&l)
 		result := deserializeLoginInfo(serialized)
 
@@ -79,7 +79,7 @@ func TestSetCookie(t *testing.T) {
 	ch := cookieHelper{"test.com", []byte("1234567890123456"), []byte("1234567890123456")}
 
 	w := &testResponseWriter{header: make(map[string][]string)}
-	login := &loginInfo{"x"}
+	login := &loginInfo{Username: "x", ID: 1, IsAdmin: false}
 	ch.setLoginCookie(w, login)
 
 	if val, ok := w.header["Set-Cookie"]; ok {

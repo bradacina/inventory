@@ -32,7 +32,7 @@ func (app *app) login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_, err := app.userService.ValidateCredentials(form.Email, form.Password)
+		user, err := app.userService.ValidateCredentials(form.Email, form.Password)
 		if err != nil {
 			feedback := loginFormFeedback{Errors: []string{err.Error()}}
 			feedback.Email = form.Email
@@ -40,7 +40,7 @@ func (app *app) login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		app.cookieHelper.setLoginCookie(w, &loginInfo{form.Email})
+		app.cookieHelper.setLoginCookie(w, &loginInfo{Username: user.Email, ID: user.ID, IsAdmin: user.ID == 1})
 		http.Redirect(w, r, "/secure", http.StatusSeeOther)
 
 	} else {
