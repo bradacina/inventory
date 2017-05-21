@@ -18,7 +18,7 @@ type InventoryServicer interface {
 	Create(inventory *Inventory, userID int) error
 	Update(inventory *Inventory, userID int) error
 
-	Delete(id int, userID int) error
+	SoftDelete(id int, userID int) error
 	//UpdateInventoryList(inventory []Inventory, userID int) error
 
 	GetByUserID(userID int) ([]Inventory, error)
@@ -60,7 +60,7 @@ func (is *inventoryService) GetByUserID(userID int) ([]Inventory, error) {
 	return inventories, nil
 }
 
-func (is *inventoryService) Delete(id int, userID int) error {
+func (is *inventoryService) SoftDelete(id int, userID int) error {
 	inv, err := is.inventoryRepo.GetByID(id)
 	if err != nil {
 		return err

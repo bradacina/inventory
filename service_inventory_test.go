@@ -82,6 +82,11 @@ func TestInventoryService(t *testing.T) {
 		t.Error("Retrieved a non existing inventory")
 	}
 
+	_, err = is.GetByID(invID, anotherUserID)
+	if err == nil {
+		t.Error("Should not be able to retrieve other users inventory")
+	}
+
 	_, err = is.GetByUserID(userID)
 	if err != nil {
 		t.Error("Could not retrieve existing inventory by userID")
@@ -109,6 +114,15 @@ func TestInventoryService(t *testing.T) {
 		t.Error("Should be able to update inventory, Error:", err)
 	}
 
+	inv4, err := is.GetByID(invID, userID)
+	if err != nil {
+		t.Error("Could not retrieve updated inventory, Error:", err)
+	}
+
+	if inv4.Name != "warehouse3" {
+		t.Error("Inventory was not updated")
+	}
+
 	err = is.CreateWithName("xxx", userID)
 	if err == nil {
 		t.Error("Was able to create an inventory with name <= 3 characters")
@@ -117,5 +131,19 @@ func TestInventoryService(t *testing.T) {
 	err = is.CreateWithName("xxxx", userID)
 	if err != nil {
 		t.Error("Could not create inventory with name, Error:", err)
+	}
+
+	err = is.SoftDelete(inv.ID, userID)
+	if err != nil {
+		t.Error("Could not soft delete an inventory, Error:", err)
+	}
+
+	inv5, err := is.GetByID(invID, userID)
+	if err != nil {
+		t.Error("Could not retrieve a soft deleted inventory, Error:", err)
+	}
+
+	if !inv5.IsDeleted {
+		t.Error("Inventory was not soft deleted")
 	}
 }

@@ -43,7 +43,7 @@ func (app *app) inventoryList(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = app.inventoryService.Delete(id, user.ID)
+		err = app.inventoryService.SoftDelete(id, user.ID)
 		if err != nil {
 			log.Println(err)
 		}
