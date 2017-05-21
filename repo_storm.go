@@ -40,14 +40,14 @@ func (ur *stormUserRepo) GetByEmail(email string) (*User, error) {
 	return &user, err
 }
 
-func (ur *stormUserRepo) GetAll() []User {
+func (ur *stormUserRepo) GetAll() ([]User, error) {
 	if ur.db == nil {
 		panic("Database is not instantiated")
 	}
 
 	var users []User
-	ur.db.All(&users)
-	return users
+	err := ur.db.All(&users)
+	return users, err
 }
 
 func (ur *stormUserRepo) Upsert(user *User) error {
@@ -95,14 +95,14 @@ func (ir *stormInventoryRepo) GetByName(name string) ([]Inventory, error) {
 	return inv, err
 }
 
-func (ir *stormInventoryRepo) GetAll() []Inventory {
+func (ir *stormInventoryRepo) GetAll() ([]Inventory, error) {
 	if ir.db == nil {
 		panic("Database is not instantiated")
 	}
 
 	var invs []Inventory
-	ir.db.All(&invs)
-	return invs
+	err := ir.db.All(&invs)
+	return invs, err
 }
 
 func (ir *stormInventoryRepo) Upsert(inventory *Inventory) error {

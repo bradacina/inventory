@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func (app *app) inventoryList(w http.ResponseWriter, r *http.Request) {
@@ -10,25 +11,42 @@ func (app *app) inventoryList(w http.ResponseWriter, r *http.Request) {
 	if user == nil {
 		log.Panic("User came back nil form request Context")
 	}
-	if r.Method == http.MethodGet {
-		inventories := app.inventoryService.GetByUserID(user.ID)
 
+	inventories, err := app.inventoryService.GetByUserID(user.ID)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if r.Method == http.MethodGet {
 		serveTemplate(w, TemplateInventoryList, inventories)
 
 	} else if r.Method == http.MethodPost {
-		inventories := app.inventoryService.GetByUserID(user.ID)
+		err := app.inventoryService.CreateWithName(r.FormValue("name"), user.ID)
+		if err != nil {
+			log.Println(err)
+			serveTemplate(w, TemplateInventoryList, inventories)
+			return
+		}
 
-		//postInventories := parseInventories(r)
+		inventories, err := app.inventoryService.GetByUserID(user.ID)
+		if err != nil {
+			log.Panic(err)
+		}
 
-		// todo: determine deletions and make them as deleted
+		serveTemplate(w, TemplateInventoryList, inventories)
+	} else if r.Method == http.MethodDelete {
 
-		// todo: determine additions
+		id, err := strconv.Atoi(r.FormValue("id"))
+		if err != nil {
+			log.Println(err)
+			serveTemplate(w, TemplateInventoryList, inventories)
+			return
+		}
 
-		// todo: determine name edits
-
-		// todo: save in db
-
-		// todo: serve new iventories through template
+		err = app.inventoryService.Delete(id, user.ID)
+		if err != nil {
+			log.Println(err)
+		}
 
 		serveTemplate(w, TemplateInventoryList, inventories)
 	}

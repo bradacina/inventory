@@ -85,6 +85,15 @@ func TestUserRepo(t *testing.T) {
 
 	ur := newUserRepo(db)
 
+	allUsers, err := ur.GetAll()
+	if err != nil {
+		t.Error("Could not retrieve all users. Error:", err)
+	}
+
+	if len(allUsers) != 0 {
+		t.Error("Retrieved non existent users")
+	}
+
 	err = ur.Upsert(&user)
 	if err != nil {
 		t.Error("Could not insert a new user")
@@ -117,9 +126,19 @@ func TestUserRepo(t *testing.T) {
 		t.Error("Could not retrieve a user by email address, Error:", err)
 	}
 
+	_, err = ur.GetByEmail("nonexistent@user.com")
+	if err == nil {
+		t.Error("Retrieved a non existent user", err)
+	}
+
 	_, err = ur.GetByID(1)
 	if err != nil {
 		t.Error("Could not retrieve a user by ID, Error:", err)
+	}
+
+	_, err = ur.GetByID(23)
+	if err == nil {
+		t.Error("Retrieved a non existent user")
 	}
 
 	err = ur.Upsert(&User{})
@@ -127,7 +146,10 @@ func TestUserRepo(t *testing.T) {
 		t.Error("Could not insert a new user")
 	}
 
-	allUsers := ur.GetAll()
+	allUsers, err = ur.GetAll()
+	if err != nil {
+		t.Error("Could not retrieve all users, Error:", err)
+	}
 
 	if len(allUsers) != 2 {
 		t.Error("Did not retrieve ALL users")
@@ -163,6 +185,15 @@ func TestInventoryRepo(t *testing.T) {
 
 	ir := newInventoryRepo(db)
 
+	allInv, err := ir.GetAll()
+	if err != nil {
+		t.Error("Could not retrieve inventories, Error:", err)
+	}
+
+	if len(allInv) != 0 {
+		t.Error("Retrieved non existent inventories")
+	}
+
 	err = ir.Upsert(&inv)
 	if err != nil {
 		t.Error("Could not insert a new inventory")
@@ -197,9 +228,19 @@ func TestInventoryRepo(t *testing.T) {
 		t.Error("Could not retrieve inventory by ID, Error:", err)
 	}
 
+	_, err = ir.GetByID(234)
+	if err == nil {
+		t.Error("Retrieved non existent inventory")
+	}
+
 	_, err = ir.GetByName("warehouse2")
 	if err != nil {
 		t.Error("Could not retrieve inventory by Name, Error:", err)
+	}
+
+	_, err = ir.GetByName("ads3rgs")
+	if err == nil {
+		t.Error("Retrieved non existent inventory")
 	}
 
 	_, err = ir.GetByUserID(1)
@@ -233,7 +274,11 @@ func TestInventoryRepo(t *testing.T) {
 		t.Error("Could not insert a new inventory")
 	}
 
-	allInv := ir.GetAll()
+	allInv, err = ir.GetAll()
+	if err != nil {
+		t.Error("Could not retrieve all inventories")
+	}
+
 	if len(allInv) != 2 {
 		t.Error("Did not retrieve all inventories")
 	}
