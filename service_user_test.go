@@ -88,6 +88,8 @@ func TestUserService(t *testing.T) {
 	if err == nil {
 		t.Error("Found a user that should not be in database by email")
 	}
+
+	//TODO: test GetAll
 }
 
 func TestMultiThreading(t *testing.T) {

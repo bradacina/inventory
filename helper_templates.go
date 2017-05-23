@@ -7,10 +7,14 @@ import "net/http"
 type templateName string
 
 const (
-	TemplateLogin           templateName = "login.html"
-	TemplateRegister        templateName = "register.html"
-	TemplateInventoryList   templateName = "inventoryList.html"
-	TemplateInventoryDetail templateName = "inventoryDetail.html"
+	TemplateLogin                templateName = "login.html"
+	TemplateRegister             templateName = "register.html"
+	TemplateInventoryList        templateName = "inventoryList.html"
+	TemplateInventoryDetail      templateName = "inventoryDetail.html"
+	TemplateAdminListUsers       templateName = "admin_list_users.html"
+	TemplateAdminUser            templateName = "admin_user.html"
+	TemplateAdminListInventories templateName = "admin_list_inventories.html"
+	TemplateAdminInventory       templateName = "admin_inventory.html"
 )
 
 var (

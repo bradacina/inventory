@@ -11,6 +11,7 @@ type UserServicer interface {
 	RegisterUser(email, password string) error
 	GetByEmail(email string) (*User, error)
 	GetByID(id int) (*User, error)
+	GetAll() ([]User, error)
 	ValidateCredentials(email, password string) (*User, error)
 	Update(user *User, userID int) error
 }
@@ -33,6 +34,10 @@ func NewUserServiceFromDB(db *storm.DB) UserServicer {
 	return &userService{userRepo: newUserRepo(db)}
 }
 
+func (us *userService) GetAll() ([]User, error) {
+	return us.userRepo.GetAll()
+}
+
 func (us *userService) RegisterUser(email, password string) error {
 	repo := us.userRepo
 	_, err := repo.GetByEmail(email)
@@ -42,7 +47,14 @@ func (us *userService) RegisterUser(email, password string) error {
 			return err
 		}
 
-		repo.Upsert(&User{Email: email, Password: hashed})
+		user := User{Email: email, Password: hashed}
+		repo.Upsert(&user)
+
+		if user.ID == 1 {
+			user.IsAdmin = true
+		}
+
+		repo.Upsert(&user)
 		return nil
 	}
 

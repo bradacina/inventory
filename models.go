@@ -1,9 +1,11 @@
 package main
 
 type User struct {
-	ID       int    `storm:"id,increment"`
-	Email    string `storm:"unique"`
-	Password []byte
+	ID        int    `storm:"id,increment"`
+	Email     string `storm:"unique"`
+	Password  []byte
+	IsAdmin   bool
+	IsDeleted bool
 }
 
 type Item struct {

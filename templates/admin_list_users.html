@@ -1,0 +1,27 @@
+{{template "header.html"}}
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Is Admin</th>
+            <td>Is Deleted</th>
+                <td></td>
+                <td></td>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Email}}</td>
+            <td>{{.IsAdmin}}</td>
+            <td>{{.IsDeleted}}</td>
+            <td>Edit</td>
+            <td>Delete</td>
+        </tr>
+        {{end}}
+</table>
+
+{{template "footer.html"}}

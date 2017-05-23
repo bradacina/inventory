@@ -34,6 +34,7 @@ type registerFormFeedback struct {
 }
 
 func (app *app) register(w http.ResponseWriter, r *http.Request) {
+	app.cookieHelper.deleteLoginCookie(w)
 	if r.Method == http.MethodGet {
 		serveTemplate(w, TemplateRegister, nil)
 

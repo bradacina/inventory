@@ -15,9 +15,9 @@ type loginFormFeedback struct {
 }
 
 func (app *app) login(w http.ResponseWriter, r *http.Request) {
-	li, err := app.cookieHelper.getLoginCookie(r)
+	login, err := app.cookieHelper.getLoginCookie(r)
 	if err == nil {
-		app.cookieHelper.setLoginCookie(w, li)
+		app.cookieHelper.setLoginCookie(w, login)
 		http.Redirect(w, r, "/secure", http.StatusSeeOther)
 		return
 	}
@@ -40,7 +40,8 @@ func (app *app) login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		app.cookieHelper.setLoginCookie(w, &loginInfo{Username: user.Email, ID: user.ID, IsAdmin: user.ID == 1})
+		loginInfo := loginInfo{Username: user.Email, ID: user.ID, IsAdmin: user.IsAdmin}
+		app.cookieHelper.setLoginCookie(w, &loginInfo)
 		http.Redirect(w, r, "/secure", http.StatusSeeOther)
 
 	} else {

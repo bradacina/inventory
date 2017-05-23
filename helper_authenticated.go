@@ -11,14 +11,14 @@ type loggedInUserKeyType string
 const loggedInUserKey = loggedInUserKeyType("loggedInUserKey")
 
 func (app *app) authenticatedHandler(handler http.Handler) http.HandlerFunc {
-	return makeHandler(app, handler.ServeHTTP)
+	return makeAuthHandler(app, handler.ServeHTTP)
 }
 
 func (app *app) authenticatedHandleFunc(handlerFunc http.HandlerFunc) http.HandlerFunc {
-	return makeHandler(app, handlerFunc)
+	return makeAuthHandler(app, handlerFunc)
 }
 
-func makeHandler(app *app, handlerFunc http.HandlerFunc) http.HandlerFunc {
+func makeAuthHandler(app *app, handlerFunc http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		loginInfo, err := app.cookieHelper.getLoginCookie(r)
 		if err != nil {
