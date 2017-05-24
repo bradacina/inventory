@@ -27,6 +27,15 @@ func TestUserService(t *testing.T) {
 	ur := newUserRepo(db)
 	_ = NewUserService(ur)
 
+	allUsers, err := us.GetAll()
+	if err != nil {
+		t.Error("Should not throw errors when calling GetAll() and database is empty")
+	}
+
+	if len(allUsers) > 0 {
+		t.Error("Should not be able to retrieve users when database is empty")
+	}
+
 	err = us.RegisterUser(email, "password1")
 	if err != nil {
 		t.Error("Cannot register a new user, Error:", err)
@@ -40,6 +49,15 @@ func TestUserService(t *testing.T) {
 	err = us.RegisterUser("test2@email.com", "password")
 	if err != nil {
 		t.Error("Cannot register a second user, Error:", err)
+	}
+
+	allUsers, err = us.GetAll()
+	if err != nil {
+		t.Error("Cannot retrieve all users")
+	}
+
+	if len(allUsers) != 2 {
+		t.Error("Did not retrieve all users")
 	}
 
 	user, err := us.GetByEmail(email)

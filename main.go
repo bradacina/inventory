@@ -27,7 +27,7 @@ func newApp() *app {
 
 	userService := NewUserService(userRepo)
 
-	inventoryService := NewInventoryService(inventoryRepo)
+	inventoryService := NewInventoryService(inventoryRepo, userRepo)
 
 	cookieHelper := cookieHelper{"test.dev",
 		[]byte("what a secret123"),

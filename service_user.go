@@ -14,6 +14,8 @@ type UserServicer interface {
 	GetAll() ([]User, error)
 	ValidateCredentials(email, password string) (*User, error)
 	Update(user *User, userID int) error
+
+	UpdateByAdmin(user *User) error
 }
 
 var (
@@ -95,18 +97,12 @@ func (us *userService) ValidateCredentials(email, password string) (*User, error
 	return user, nil
 }
 
-// Updates a user record
-// userID is the id of the user that's making the request
-func (us *userService) Update(user *User, userID int) error {
+func (us *userService) UpdateByAdmin(user *User) error {
 	if user == nil {
 		return ErrorNotFound
 	}
 
 	if user.ID <= 0 {
-		return ErrorNotFound
-	}
-
-	if userID != 0 && userID != user.ID {
 		return ErrorNotFound
 	}
 
@@ -124,4 +120,16 @@ func (us *userService) Update(user *User, userID int) error {
 
 	us.userRepo.Upsert(user)
 	return nil
+}
+
+// Updates a user record
+// userID is the id of the user that's making the request
+func (us *userService) Update(user *User, userID int) error {
+
+	if userID != 0 && userID != user.ID {
+		return ErrorNotFound
+
+	}
+
+	return us.UpdateByAdmin(user)
 }

@@ -1,0 +1,4 @@
+- finish handler_admin_inventories
+- check and then increase unit test coverage
+- parse incoming new inventory
+- put route names and route paths in a map

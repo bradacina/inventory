@@ -1,0 +1,29 @@
+{{template "header.html"}}
+<a hreg="/admin_add_inventory">Add New Inventory</a>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>UserID</th>
+            <th>Email</th>
+            <th>Name</th>
+            <td>Total Items</th>
+            <td>Is Deleted</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.UserID}}</td>
+            <td>{{.Email}}</td>
+            <td>{{.Name}}</td>
+            <td>{{.TotalItems}}</td>
+            <td>{{.IsDeleted}}</td>
+            <td><a href="/admin_edit_inventory?id={{.ID}}">Edit</td>
+        </tr>
+        {{end}}
+</table>
+
+{{template "footer.html"}}

@@ -40,6 +40,13 @@ func (app *app) login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if user.IsDeleted {
+			feedback := loginFormFeedback{Errors: []string{"This user has been disabled"}}
+			feedback.Email = form.Email
+			serveTemplate(w, TemplateLogin, feedback)
+			return
+		}
+
 		loginInfo := loginInfo{Username: user.Email, ID: user.ID, IsAdmin: user.IsAdmin}
 		app.cookieHelper.setLoginCookie(w, &loginInfo)
 		http.Redirect(w, r, "/secure", http.StatusSeeOther)

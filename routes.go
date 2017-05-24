@@ -17,12 +17,6 @@ func registerRoutes(app *app) {
 				app.getHandleFunc(
 					app.adminListUsers))))
 
-	http.HandleFunc("/admin_add_user",
-		app.authenticatedHandleFunc(
-			app.isAdminHandleFunc(
-				app.postHandleFunc(
-					app.adminAddUser))))
-
 	http.HandleFunc("/admin_delete_user",
 		app.authenticatedHandleFunc(
 			app.isAdminHandleFunc(

@@ -5,7 +5,10 @@ import "errors"
 import "log"
 
 const (
-	DefaultName = "<Inventory name not set>"
+	DefaultInventoryName = "<Inventory name not set>"
+	DefaultItemTitle     = "<Item name not set>"
+	DefaultItemSKU       = "<Item SKU not set>"
+	DefaultItemBarcode   = "<Item Barcode not set>"
 )
 
 var (
@@ -16,6 +19,7 @@ var (
 type InventoryServicer interface {
 	CreateWithName(name string, userID int) error
 	Create(inventory *Inventory, userID int) error
+	CreateByAdmin(inventory *Inventory) error
 	Update(inventory *Inventory, userID int) error
 
 	SoftDelete(id int, userID int) error
@@ -23,18 +27,20 @@ type InventoryServicer interface {
 
 	GetByUserID(userID int) ([]Inventory, error)
 	GetByID(id int, userID int) (*Inventory, error)
+	GetAll() ([]Inventory, error)
 }
 
 type inventoryService struct {
 	inventoryRepo InventoryRepoer
+	userRepo      UserRepoer
 }
 
-func NewInventoryService(inventoryRepo InventoryRepoer) InventoryServicer {
-	return &inventoryService{inventoryRepo}
+func NewInventoryService(inventoryRepo InventoryRepoer, userRepo UserRepoer) InventoryServicer {
+	return &inventoryService{inventoryRepo, userRepo}
 }
 
 func NewInventoryServiceFromDB(db *storm.DB) InventoryServicer {
-	return &inventoryService{inventoryRepo: newInventoryRepo(db)}
+	return &inventoryService{inventoryRepo: newInventoryRepo(db), userRepo: newUserRepo(db)}
 }
 
 func (is *inventoryService) GetByID(id int, userID int) (*Inventory, error) {
@@ -49,6 +55,10 @@ func (is *inventoryService) GetByID(id int, userID int) (*Inventory, error) {
 	}
 
 	return inv, nil
+}
+
+func (is *inventoryService) GetAll() ([]Inventory, error) {
+	return is.inventoryRepo.GetAll()
 }
 
 func (is *inventoryService) GetByUserID(userID int) ([]Inventory, error) {
@@ -91,15 +101,42 @@ func (is *inventoryService) CreateWithName(name string, userID int) error {
 	return err
 }
 
+func (is *inventoryService) CreateByAdmin(inventory *Inventory) error {
+	inventory.ID = 0
+
+	_, err := is.userRepo.GetByID(inventory.UserID)
+	if err != nil {
+		return err
+	}
+
+	if len(inventory.Name) == 0 {
+		inventory.Name = DefaultInventoryName
+	}
+
+	setDefaultValuesForItems(inventory.Items)
+
+	err = is.inventoryRepo.Upsert(inventory)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (is *inventoryService) Create(inventory *Inventory, userID int) error {
-	if inventory.ID != 0 {
-		return ErrorOperationNotPermitted
+	inventory.ID = 0
+
+	_, err := is.userRepo.GetByID(inventory.UserID)
+	if err != nil {
+		return err
 	}
 
 	inventory.UserID = userID
 	if len(inventory.Name) == 0 {
-		inventory.Name = DefaultName
+		inventory.Name = DefaultInventoryName
 	}
+
+	setDefaultValuesForItems(inventory.Items)
 
 	is.inventoryRepo.Upsert(inventory)
 
@@ -124,6 +161,22 @@ func (is *inventoryService) Update(inventory *Inventory, userID int) error {
 	is.inventoryRepo.Upsert(inventory)
 
 	return nil
+}
+
+func setDefaultValuesForItems(items []Item) {
+	for i := range items {
+		if len(items[i].Barcode) == 0 {
+			items[i].Barcode = DefaultItemBarcode
+		}
+
+		if len(items[i].SKU) == 0 {
+			items[i].SKU = DefaultItemSKU
+		}
+
+		if len(items[i].Title) == 0 {
+			items[i].Title = DefaultItemTitle
+		}
+	}
 }
 
 /*
