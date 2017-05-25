@@ -23,7 +23,7 @@ func AuthenticatedHandler(authDI AuthDependencyInjector, handler http.Handler) h
 	return makeAuthHandler(authDI, handler.ServeHTTP)
 }
 
-func authenticatedHandleFunc(authDI AuthDependencyInjector, handlerFunc http.HandlerFunc) http.HandlerFunc {
+func AuthenticatedHandleFunc(authDI AuthDependencyInjector, handlerFunc http.HandlerFunc) http.HandlerFunc {
 	return makeAuthHandler(authDI, handlerFunc)
 }
 

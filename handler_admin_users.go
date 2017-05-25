@@ -4,16 +4,18 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/bradacina/inventory/httphelp"
 )
 
 func (app *app) adminListUsers(w http.ResponseWriter, r *http.Request) {
 
 	users, err := app.userService.GetAll()
 	if err != nil {
-		StatusCode(w, http.StatusInternalServerError)
+		httphelp.StatusCode(w, http.StatusInternalServerError)
 		log.Panic(err)
 	}
-	serveTemplate(w, TemplateAdminListUsers, users)
+	httphelp.ServeTemplate(w, httphelp.TemplateAdminListUsers, users)
 }
 
 func (app *app) adminDeleteUser(w http.ResponseWriter, r *http.Request) {

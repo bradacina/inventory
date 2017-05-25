@@ -3,9 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"github.com/bradacina/inventory/db"
+	"github.com/bradacina/inventory/httphelp"
 )
 
-type inventoryListRecord struct {
+type adminInventoryListRecord struct {
 	ID         int
 	Name       string
 	UserID     int
@@ -26,9 +29,9 @@ func (app *app) adminListInventories(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	var displayInvs []inventoryListRecord
+	var displayInvs []adminInventoryListRecord
 	for i := range invs {
-		record := inventoryListRecord{
+		record := adminInventoryListRecord{
 			ID:         invs[i].ID,
 			UserID:     invs[i].UserID,
 			Name:       invs[i].Name,
@@ -45,12 +48,12 @@ func (app *app) adminListInventories(w http.ResponseWriter, r *http.Request) {
 		displayInvs = append(displayInvs, record)
 	}
 
-	serveTemplate(w, TemplateAdminListInventories, displayInvs)
+	httphelp.ServeTemplate(w, httphelp.TemplateAdminListInventories, displayInvs)
 }
 
 func (app *app) adminAddInventory(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		serveTemplate(w, TemplateAdminInventory, Inventory{})
+		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory, db.Inventory{})
 		return
 	} else if r.Method == http.MethodPost {
 		inventory, err := parseInventoryFromRequest(r)
@@ -69,6 +72,6 @@ func (app *app) adminAddInventory(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func parseInventoryFromRequest(r *http.Request) (*Inventory, error) {
+func parseInventoryFromRequest(r *http.Request) (*db.Inventory, error) {
 
 }

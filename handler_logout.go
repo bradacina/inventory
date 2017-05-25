@@ -5,6 +5,6 @@ import (
 )
 
 func (app *app) logout(w http.ResponseWriter, r *http.Request) {
-	app.cookieHelper.deleteLoginCookie(w)
+	app.cookieAuth.DeleteLoginCookie(w)
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

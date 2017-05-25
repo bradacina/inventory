@@ -4,10 +4,12 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/bradacina/inventory/httphelp"
 )
 
 func (app *app) inventoryList(w http.ResponseWriter, r *http.Request) {
-	user := GetLoggedInUser(r)
+	user := httphelp.GetLoggedInUser(r)
 	if user == nil {
 		log.Panic("User came back nil form request Context")
 	}
@@ -18,13 +20,13 @@ func (app *app) inventoryList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		serveTemplate(w, TemplateInventoryList, inventories)
+		httphelp.ServeTemplate(w, httphelp.TemplateInventoryList, inventories)
 
 	} else if r.Method == http.MethodPost {
 		err := app.inventoryService.CreateWithName(r.FormValue("name"), user.ID)
 		if err != nil {
 			log.Println(err)
-			serveTemplate(w, TemplateInventoryList, inventories)
+			httphelp.ServeTemplate(w, httphelp.TemplateInventoryList, inventories)
 			return
 		}
 
@@ -33,13 +35,13 @@ func (app *app) inventoryList(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 
-		serveTemplate(w, TemplateInventoryList, inventories)
+		httphelp.ServeTemplate(w, httphelp.TemplateInventoryList, inventories)
 	} else if r.Method == http.MethodDelete {
 
 		id, err := strconv.Atoi(r.FormValue("id"))
 		if err != nil {
 			log.Println(err)
-			serveTemplate(w, TemplateInventoryList, inventories)
+			httphelp.ServeTemplate(w, httphelp.TemplateInventoryList, inventories)
 			return
 		}
 
@@ -48,6 +50,6 @@ func (app *app) inventoryList(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 
-		serveTemplate(w, TemplateInventoryList, inventories)
+		httphelp.ServeTemplate(w, httphelp.TemplateInventoryList, inventories)
 	}
 }

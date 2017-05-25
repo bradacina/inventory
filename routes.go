@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"github.com/bradacina/inventory/httphelp"
 )
 
 func registerRoutes(app *app) {
@@ -12,23 +14,26 @@ func registerRoutes(app *app) {
 	http.HandleFunc("/logout", app.logout)
 
 	http.HandleFunc("/admin_users",
-		app.authenticatedHandleFunc(
-			app.isAdminHandleFunc(
-				app.getHandleFunc(
+		httphelp.AuthenticatedHandleFunc(
+			app,
+			httphelp.IsAdminHandleFunc(
+				httphelp.GetHandleFunc(
 					app.adminListUsers))))
 
 	http.HandleFunc("/admin_delete_user",
-		app.authenticatedHandleFunc(
-			app.isAdminHandleFunc(
-				app.postHandleFunc(
+		httphelp.AuthenticatedHandleFunc(
+			app,
+			httphelp.IsAdminHandleFunc(
+				httphelp.PostHandleFunc(
 					app.adminDeleteUser))))
 
 	http.HandleFunc("/admin_edit_user",
-		app.authenticatedHandleFunc(
-			app.isAdminHandleFunc(
-				app.postHandleFunc(
+		httphelp.AuthenticatedHandleFunc(
+			app,
+			httphelp.IsAdminHandleFunc(
+				httphelp.PostHandleFunc(
 					app.adminEditUser))))
 
-	http.HandleFunc("/secure", app.authenticatedHandleFunc(app.secure))
+	http.HandleFunc("/secure", httphelp.AuthenticatedHandleFunc(app, app.secure))
 	log.Println("Done")
 }

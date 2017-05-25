@@ -2,6 +2,9 @@ package main
 
 import (
 	"net/http"
+
+	"github.com/bradacina/inventory/httphelp"
+	"github.com/bradacina/inventory/logincookie"
 )
 
 type loginForm struct {
@@ -15,20 +18,20 @@ type loginFormFeedback struct {
 }
 
 func (app *app) login(w http.ResponseWriter, r *http.Request) {
-	login, err := app.cookieHelper.getLoginCookie(r)
+	login, err := app.cookieAuth.GetLoginCookie(r)
 	if err == nil {
-		app.cookieHelper.setLoginCookie(w, login)
+		app.cookieAuth.SetLoginCookie(w, login)
 		http.Redirect(w, r, "/secure", http.StatusSeeOther)
 		return
 	}
 
 	if r.Method == http.MethodGet {
-		serveTemplate(w, TemplateLogin, nil)
+		httphelp.ServeTemplate(w, httphelp.TemplateLogin, nil)
 	} else if r.Method == http.MethodPost {
 		form := parseLoginForm(r)
 
 		if valid := validate(form); valid != nil {
-			serveTemplate(w, TemplateLogin, valid)
+			httphelp.ServeTemplate(w, httphelp.TemplateLogin, valid)
 			return
 		}
 
@@ -36,19 +39,19 @@ func (app *app) login(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			feedback := loginFormFeedback{Errors: []string{err.Error()}}
 			feedback.Email = form.Email
-			serveTemplate(w, TemplateLogin, feedback)
+			httphelp.ServeTemplate(w, httphelp.TemplateLogin, feedback)
 			return
 		}
 
 		if user.IsDeleted {
 			feedback := loginFormFeedback{Errors: []string{"This user has been disabled"}}
 			feedback.Email = form.Email
-			serveTemplate(w, TemplateLogin, feedback)
+			httphelp.ServeTemplate(w, httphelp.TemplateLogin, feedback)
 			return
 		}
 
-		loginInfo := loginInfo{Username: user.Email, ID: user.ID, IsAdmin: user.IsAdmin}
-		app.cookieHelper.setLoginCookie(w, &loginInfo)
+		loginInfo := logincookie.LoginInfo{Username: user.Email, ID: user.ID, IsAdmin: user.IsAdmin}
+		app.cookieAuth.SetLoginCookie(w, &loginInfo)
 		http.Redirect(w, r, "/secure", http.StatusSeeOther)
 
 	} else {

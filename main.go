@@ -5,41 +5,44 @@ import (
 	"net/http"
 
 	"github.com/asdine/storm"
+	"github.com/bradacina/inventory/db"
+	"github.com/bradacina/inventory/logincookie"
+	"github.com/bradacina/inventory/services"
 )
 
 type app struct {
 	db               *storm.DB
-	userRepo         UserRepoer
-	inventoryRepo    InventoryRepoer
-	userService      UserServicer
-	inventoryService InventoryServicer
-	cookieHelper     *cookieHelper
+	userRepo         db.UserRepoer
+	inventoryRepo    db.InventoryRepoer
+	userService      services.UserServicer
+	inventoryService services.InventoryServicer
+	cookieAuth       *logincookie.CookieAuthentication
 }
 
 func newApp() *app {
-	db, err := storm.Open("inventory.db")
+	database, err := storm.Open("inventory.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	userRepo := newUserRepo(db)
-	inventoryRepo := newInventoryRepo(db)
+	userRepo := db.NewUserRepo(database)
+	inventoryRepo := db.NewInventoryRepo(database)
 
-	userService := NewUserService(userRepo)
+	userService := services.NewUserService(userRepo)
 
-	inventoryService := NewInventoryService(inventoryRepo, userRepo)
+	inventoryService := services.NewInventoryService(inventoryRepo, userRepo)
 
-	cookieHelper := cookieHelper{"test.dev",
+	cookieAuth := logincookie.NewCookieAuthentication("test.dev",
 		[]byte("what a secret123"),
-		[]byte("silent night all")}
+		[]byte("silent night all"))
 
 	return &app{
-		db,
+		database,
 		userRepo,
 		inventoryRepo,
 		userService,
 		inventoryService,
-		&cookieHelper}
+		cookieAuth}
 }
 
 func main() {

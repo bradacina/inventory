@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/bradacina/inventory/httphelp"
 )
 
 const (
@@ -34,21 +36,21 @@ type registerFormFeedback struct {
 }
 
 func (app *app) register(w http.ResponseWriter, r *http.Request) {
-	app.cookieHelper.deleteLoginCookie(w)
+	app.cookieAuth.DeleteLoginCookie(w)
 	if r.Method == http.MethodGet {
-		serveTemplate(w, TemplateRegister, nil)
+		httphelp.ServeTemplate(w, httphelp.TemplateRegister, nil)
 
 	} else if r.Method == http.MethodPost {
 		regForm := registrationForm(r)
 		if valid := registrationValidation(regForm); valid != nil {
-			serveTemplate(w, TemplateRegister, valid)
+			httphelp.ServeTemplate(w, httphelp.TemplateRegister, valid)
 			return
 		}
 
 		err := app.userService.RegisterUser(regForm.Email, regForm.Password)
 		if err != nil {
 			feedback := registerFormFeedback{Errors: []string{"That email is already in use"}}
-			serveTemplate(w, TemplateRegister, feedback)
+			httphelp.ServeTemplate(w, httphelp.TemplateRegister, feedback)
 		}
 
 		log.Println("New Registration:", regForm)
