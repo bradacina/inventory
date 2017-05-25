@@ -1,10 +1,11 @@
-package main
+package services
 
 import (
 	"os"
 	"testing"
 
 	"github.com/asdine/storm"
+	"github.com/bradacina/inventory/db"
 )
 
 const (
@@ -16,27 +17,31 @@ const (
 
 func TestInventoryService(t *testing.T) {
 	dbfile := "testInventoryService.db"
-	db, err := storm.Open(dbfile)
+	database, err := storm.Open(dbfile)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	defer func() {
-		db.Close()
+		database.Close()
 		os.Remove(dbfile)
 	}()
 
-	is := NewInventoryServiceFromDB(db)
+	is := NewInventoryServiceFromDB(database)
 
-	ir := newInventoryRepo(db)
-	_ = NewInventoryService(ir)
+	ur := db.NewUserRepo(database)
 
-	var items []Item
+	ir := db.NewInventoryRepo(database)
+	_ = NewInventoryService(ir, ur)
 
-	items = append(items, Item{Barcode: "123", Quantity: 12, SKU: "123", Title: "coca"})
-	items = append(items, Item{Barcode: "456", Quantity: 1, SKU: "456", Title: "bmw"})
+	var items []db.Item
 
-	inv := Inventory{Items: items}
+	items = append(items, db.Item{Barcode: "123", Quantity: 12, SKU: "123", Title: "coca"})
+	items = append(items, db.Item{Barcode: "456", Quantity: 1, SKU: "456", Title: "bmw"})
+
+	inv := db.Inventory{UserID: userID, Items: items}
+
+	ur.Upsert(&db.User{Email: "test@email.com"})
 
 	err = is.Create(&inv, userID)
 	if err != nil {
@@ -47,17 +52,12 @@ func TestInventoryService(t *testing.T) {
 		t.Error("Inventory.UserID should be set for a newly created inventory")
 	}
 
-	if inv.Name != DefaultName {
+	if inv.Name != DefaultInventoryName {
 		t.Error("Inventory.Name should be set to default if it was empty")
 	}
 
 	if inv.ID != 1 {
 		t.Error("Inventory.ID was not set properly")
-	}
-
-	err = is.Create(&inv, userID)
-	if err == nil {
-		t.Error("Should not be able to create an inventory that has ID")
 	}
 
 	inv2, err := is.GetByID(inv.ID, userID)
@@ -97,7 +97,7 @@ func TestInventoryService(t *testing.T) {
 		t.Error("Retrieved inventoris that don't exist")
 	}
 
-	err = is.Update(&Inventory{}, userID)
+	err = is.Update(&db.Inventory{}, userID)
 	if err == nil {
 		t.Error("Should not be able to update a non existing inventory")
 	}

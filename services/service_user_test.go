@@ -1,10 +1,14 @@
-package main
+package services
 
-import "testing"
-import "github.com/asdine/storm"
-import "os"
-import "strconv"
-import "sync"
+import (
+	"os"
+	"strconv"
+	"sync"
+	"testing"
+
+	"github.com/asdine/storm"
+	"github.com/bradacina/inventory/db"
+)
 
 const (
 	email = "test1@email.com"
@@ -12,19 +16,19 @@ const (
 
 func TestUserService(t *testing.T) {
 	dbfile := "testUserService.db"
-	db, err := storm.Open(dbfile)
+	database, err := storm.Open(dbfile)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	defer func() {
-		db.Close()
+		database.Close()
 		os.Remove(dbfile)
 	}()
 
-	us := NewUserServiceFromDB(db)
+	us := NewUserServiceFromDB(database)
 
-	ur := newUserRepo(db)
+	ur := db.NewUserRepo(database)
 	_ = NewUserService(ur)
 
 	allUsers, err := us.GetAll()

@@ -1,4 +1,4 @@
-package main
+package logincookie
 
 import (
 	"net/http"
@@ -19,7 +19,7 @@ func TestSerializeDeserialize(t *testing.T) {
 		for j := 0; j < i; j++ {
 			s = s + "x"
 		}
-		l := loginInfo{Username: s, ID: i, IsAdmin: true}
+		l := LoginInfo{Username: s, ID: i, IsAdmin: true}
 		serialized := serializeLoginInfo(&l)
 		result := deserializeLoginInfo(serialized)
 
@@ -31,7 +31,7 @@ func TestSerializeDeserialize(t *testing.T) {
 
 func TestEncryptDecrypt(t *testing.T) {
 
-	ch := cookieHelper{"test.com", []byte("1234567890123456"), []byte("1234567890123456")}
+	ch := CookieAuthentication{"test.com", []byte("1234567890123456"), []byte("1234567890123456")}
 
 	var testString string
 
@@ -47,7 +47,7 @@ func TestEncryptDecrypt(t *testing.T) {
 }
 
 func TestSignVerify(t *testing.T) {
-	ch := cookieHelper{"test.com", []byte("1234567890123456"), []byte("1234567890123456")}
+	ch := CookieAuthentication{"test.com", []byte("1234567890123456"), []byte("1234567890123456")}
 
 	var testString string
 
@@ -63,7 +63,7 @@ func TestSignVerify(t *testing.T) {
 }
 
 func TestEncodeDecode(t *testing.T) {
-	ch := cookieHelper{}
+	ch := CookieAuthentication{}
 
 	cipher := "test cypher"
 	sig := "test signature"
@@ -76,11 +76,11 @@ func TestEncodeDecode(t *testing.T) {
 }
 
 func TestSetCookie(t *testing.T) {
-	ch := cookieHelper{"test.com", []byte("1234567890123456"), []byte("1234567890123456")}
+	ch := CookieAuthentication{"test.com", []byte("1234567890123456"), []byte("1234567890123456")}
 
 	w := &testResponseWriter{header: make(map[string][]string)}
-	login := &loginInfo{Username: "x", ID: 1, IsAdmin: false}
-	ch.setLoginCookie(w, login)
+	login := &LoginInfo{Username: "x", ID: 1, IsAdmin: false}
+	ch.SetLoginCookie(w, login)
 
 	if val, ok := w.header["Set-Cookie"]; ok {
 		if !strings.Contains(val[0], "Inventory987-Login") {

@@ -1,21 +1,22 @@
-package main
+package services
 
 import (
 	"errors"
 
 	"github.com/asdine/storm"
+	"github.com/bradacina/inventory/db"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServicer interface {
 	RegisterUser(email, password string) error
-	GetByEmail(email string) (*User, error)
-	GetByID(id int) (*User, error)
-	GetAll() ([]User, error)
-	ValidateCredentials(email, password string) (*User, error)
-	Update(user *User, userID int) error
+	GetByEmail(email string) (*db.User, error)
+	GetByID(id int) (*db.User, error)
+	GetAll() ([]db.User, error)
+	ValidateCredentials(email, password string) (*db.User, error)
+	Update(user *db.User, userID int) error
 
-	UpdateByAdmin(user *User) error
+	UpdateByAdmin(user *db.User) error
 }
 
 var (
@@ -25,18 +26,18 @@ var (
 )
 
 type userService struct {
-	userRepo UserRepoer
+	userRepo db.UserRepoer
 }
 
-func NewUserService(userRepo UserRepoer) UserServicer {
+func NewUserService(userRepo db.UserRepoer) UserServicer {
 	return &userService{userRepo}
 }
 
-func NewUserServiceFromDB(db *storm.DB) UserServicer {
-	return &userService{userRepo: newUserRepo(db)}
+func NewUserServiceFromDB(stormdb *storm.DB) UserServicer {
+	return &userService{userRepo: db.NewUserRepo(stormdb)}
 }
 
-func (us *userService) GetAll() ([]User, error) {
+func (us *userService) GetAll() ([]db.User, error) {
 	return us.userRepo.GetAll()
 }
 
@@ -49,7 +50,7 @@ func (us *userService) RegisterUser(email, password string) error {
 			return err
 		}
 
-		user := User{Email: email, Password: hashed}
+		user := db.User{Email: email, Password: hashed}
 		repo.Upsert(&user)
 
 		if user.ID == 1 {
@@ -63,7 +64,7 @@ func (us *userService) RegisterUser(email, password string) error {
 	return ErrorEmailInUse
 }
 
-func (us *userService) GetByEmail(email string) (*User, error) {
+func (us *userService) GetByEmail(email string) (*db.User, error) {
 	repo := us.userRepo
 	user, err := repo.GetByEmail(email)
 	if err != nil {
@@ -73,7 +74,7 @@ func (us *userService) GetByEmail(email string) (*User, error) {
 	return user, nil
 }
 
-func (us *userService) GetByID(id int) (*User, error) {
+func (us *userService) GetByID(id int) (*db.User, error) {
 	repo := us.userRepo
 	user, err := repo.GetByID(id)
 	if err != nil {
@@ -83,7 +84,7 @@ func (us *userService) GetByID(id int) (*User, error) {
 	return user, nil
 }
 
-func (us *userService) ValidateCredentials(email, password string) (*User, error) {
+func (us *userService) ValidateCredentials(email, password string) (*db.User, error) {
 	user, err := us.GetByEmail(email)
 	if err != nil {
 		return nil, ErrorInvalidCredentials
@@ -97,7 +98,7 @@ func (us *userService) ValidateCredentials(email, password string) (*User, error
 	return user, nil
 }
 
-func (us *userService) UpdateByAdmin(user *User) error {
+func (us *userService) UpdateByAdmin(user *db.User) error {
 	if user == nil {
 		return ErrorNotFound
 	}
@@ -124,7 +125,7 @@ func (us *userService) UpdateByAdmin(user *User) error {
 
 // Updates a user record
 // userID is the id of the user that's making the request
-func (us *userService) Update(user *User, userID int) error {
+func (us *userService) Update(user *db.User, userID int) error {
 
 	if userID != 0 && userID != user.ID {
 		return ErrorNotFound

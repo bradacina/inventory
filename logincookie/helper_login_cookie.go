@@ -1,4 +1,4 @@
-package main
+package logincookie
 
 import (
 	"bytes"
@@ -17,30 +17,35 @@ import (
 )
 
 const (
-	LoginCookieName = "Inventory987-Login"
-	CookieLifetime  = 3600 // 1 hour
-	CookieExpire    = -1
+	loginCookieName = "Inventory987-Login"
+	cookieLifetime  = 3600 // 1 hour
+	cookieExpire    = -1
 
-	Padding byte = 255
+	padding byte = 255
 )
 
 var (
 	ErrorNoLoginCookie = errors.New("No Login Cookie")
 )
 
-type cookieHelper struct {
+type CookieAuthentication struct {
 	domain  string
 	hmacKey []byte
 	aesKey  []byte
 }
 
-type loginInfo struct {
+type LoginInfo struct {
 	ID       int
 	Username string
 	IsAdmin  bool
 }
 
-func serializeLoginInfo(info *loginInfo) []byte {
+func NewCookieAuthentication(
+	domain string, hmacKey []byte, aesKey []byte) *CookieAuthentication {
+	return &CookieAuthentication{domain, hmacKey, aesKey}
+}
+
+func serializeLoginInfo(info *LoginInfo) []byte {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(info)
@@ -59,15 +64,15 @@ func serializeLoginInfo(info *loginInfo) []byte {
 
 	serialized = append(serialized, make([]byte, needed)...)
 	for i := 0; i < needed; i++ {
-		serialized[initialLen+i] = Padding
+		serialized[initialLen+i] = padding
 	}
 
 	return serialized
 }
 
-func deserializeLoginInfo(serialized []byte) *loginInfo {
+func deserializeLoginInfo(serialized []byte) *LoginInfo {
 	for i := len(serialized) - 1; i >= 0; i-- {
-		if serialized[i] != Padding {
+		if serialized[i] != padding {
 			serialized = serialized[:i+1]
 			break
 		}
@@ -75,13 +80,13 @@ func deserializeLoginInfo(serialized []byte) *loginInfo {
 
 	buf := bytes.NewBuffer(serialized)
 	dec := gob.NewDecoder(buf)
-	var loginInfo loginInfo
+	var loginInfo LoginInfo
 	dec.Decode(&loginInfo)
 
 	return &loginInfo
 }
 
-func (ch *cookieHelper) encrypt(content []byte) []byte {
+func (ch *CookieAuthentication) encrypt(content []byte) []byte {
 
 	if len(content)%aes.BlockSize != 0 {
 		log.Panic("Content to encrypt is not a multiple of aes.BlockSize")
@@ -104,7 +109,7 @@ func (ch *cookieHelper) encrypt(content []byte) []byte {
 	return ciphertext
 }
 
-func (ch *cookieHelper) decrypt(ciphertext []byte) []byte {
+func (ch *CookieAuthentication) decrypt(ciphertext []byte) []byte {
 	block, err := aes.NewCipher(ch.aesKey)
 	if err != nil {
 		log.Panicln("Could not create aes cipher", err)
@@ -127,7 +132,7 @@ func (ch *cookieHelper) decrypt(ciphertext []byte) []byte {
 	return ciphertext
 }
 
-func (ch *cookieHelper) sign(ciphertext []byte) []byte {
+func (ch *CookieAuthentication) sign(ciphertext []byte) []byte {
 	mac := hmac.New(sha256.New, ch.hmacKey)
 	mac.Write(ciphertext)
 	signature := mac.Sum(nil)
@@ -135,7 +140,7 @@ func (ch *cookieHelper) sign(ciphertext []byte) []byte {
 	return signature
 }
 
-func (ch *cookieHelper) verifySignature(ciphertext, expectedSig []byte) bool {
+func (ch *CookieAuthentication) verifySignature(ciphertext, expectedSig []byte) bool {
 	mac := hmac.New(sha256.New, ch.hmacKey)
 	mac.Write(ciphertext)
 	signature := mac.Sum(nil)
@@ -143,14 +148,14 @@ func (ch *cookieHelper) verifySignature(ciphertext, expectedSig []byte) bool {
 	return hmac.Equal(signature, expectedSig)
 }
 
-func (ch *cookieHelper) encryptAndSign(content []byte) ([]byte, []byte) {
+func (ch *CookieAuthentication) encryptAndSign(content []byte) ([]byte, []byte) {
 	encrypted := ch.encrypt(content)
 	signed := ch.sign(encrypted)
 
 	return encrypted, signed
 }
 
-func (ch *cookieHelper) verifySignatureAndDecrypt(ciphertext, signature []byte) []byte {
+func (ch *CookieAuthentication) verifySignatureAndDecrypt(ciphertext, signature []byte) []byte {
 	if !ch.verifySignature(ciphertext, signature) {
 		log.Panicln("Cookie signature verification failed")
 	}
@@ -159,14 +164,14 @@ func (ch *cookieHelper) verifySignatureAndDecrypt(ciphertext, signature []byte) 
 	return decrypted
 }
 
-func (ch *cookieHelper) encode(ciphertext, signature []byte) string {
+func (ch *CookieAuthentication) encode(ciphertext, signature []byte) string {
 	encodedSignature := base64.StdEncoding.EncodeToString(signature)
 	encodedCiphertext := base64.StdEncoding.EncodeToString(ciphertext)
 
 	return encodedCiphertext + "." + encodedSignature
 }
 
-func (ch *cookieHelper) decode(cookie string) ([]byte, []byte) {
+func (ch *CookieAuthentication) decode(cookie string) ([]byte, []byte) {
 	idx := strings.IndexByte(cookie, '.')
 	if idx == -1 {
 		log.Panicln("Cookie was not in the correct format")
@@ -188,22 +193,22 @@ func (ch *cookieHelper) decode(cookie string) ([]byte, []byte) {
 	return ciphertext, signature
 }
 
-func (ch *cookieHelper) setLoginCookie(w http.ResponseWriter, loginInfo *loginInfo) {
+func (ch *CookieAuthentication) SetLoginCookie(w http.ResponseWriter, loginInfo *LoginInfo) {
 
 	value := ch.encode(ch.encryptAndSign(serializeLoginInfo(loginInfo)))
 
 	cookie := http.Cookie{
 		Domain:   ch.domain,
-		MaxAge:   CookieLifetime,
+		MaxAge:   cookieLifetime,
 		HttpOnly: true,
-		Name:     LoginCookieName,
+		Name:     loginCookieName,
 		Secure:   true,
 		Value:    value}
 
 	http.SetCookie(w, &cookie)
 }
 
-func (ch *cookieHelper) getLoginCookie(r *http.Request) (li *loginInfo, err error) {
+func (ch *CookieAuthentication) GetLoginCookie(r *http.Request) (li *LoginInfo, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			li = nil
@@ -211,7 +216,7 @@ func (ch *cookieHelper) getLoginCookie(r *http.Request) (li *loginInfo, err erro
 		}
 	}()
 
-	cookie, err := r.Cookie(LoginCookieName)
+	cookie, err := r.Cookie(loginCookieName)
 	if err != nil {
 		return nil, err
 	}
@@ -221,12 +226,12 @@ func (ch *cookieHelper) getLoginCookie(r *http.Request) (li *loginInfo, err erro
 	return value, nil
 }
 
-func (ch *cookieHelper) deleteLoginCookie(w http.ResponseWriter) {
+func (ch *CookieAuthentication) DeleteLoginCookie(w http.ResponseWriter) {
 	cookie := http.Cookie{
 		Domain:   ch.domain,
-		MaxAge:   CookieExpire,
+		MaxAge:   cookieExpire,
 		HttpOnly: true,
-		Name:     LoginCookieName,
+		Name:     loginCookieName,
 		Secure:   true}
 
 	http.SetCookie(w, &cookie)

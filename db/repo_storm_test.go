@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"errors"
@@ -21,8 +21,8 @@ func catchPanic(x func()) error {
 }
 
 func TestDbNil(t *testing.T) {
-	ur := newUserRepo((*storm.DB)(nil))
-	ir := newInventoryRepo((*storm.DB)(nil))
+	ur := NewUserRepo((*storm.DB)(nil))
+	ir := NewInventoryRepo((*storm.DB)(nil))
 
 	err := catchPanic(func() { ur.GetAll() })
 	if err != nil {
@@ -83,7 +83,7 @@ func TestUserRepo(t *testing.T) {
 
 	user := User{Email: "test@email.com", Password: []byte("123")}
 
-	ur := newUserRepo(db)
+	ur := NewUserRepo(db)
 
 	allUsers, err := ur.GetAll()
 	if err != nil {
@@ -169,7 +169,7 @@ func TestInventoryRepo(t *testing.T) {
 
 	user := User{Email: "test@email.com", Password: []byte("123")}
 
-	ur := newUserRepo(db)
+	ur := NewUserRepo(db)
 
 	err = ur.Upsert(&user)
 	if err != nil {
@@ -183,7 +183,7 @@ func TestInventoryRepo(t *testing.T) {
 
 	inv := Inventory{Name: "warehouse1", Items: items, UserID: user.ID}
 
-	ir := newInventoryRepo(db)
+	ir := NewInventoryRepo(db)
 
 	allInv, err := ir.GetAll()
 	if err != nil {
