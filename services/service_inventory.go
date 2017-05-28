@@ -27,10 +27,12 @@ type InventoryServicer interface {
 	Update(inventory *db.Inventory, userID int) error
 
 	SoftDelete(id int, userID int) error
+	SoftDeleteByAdmin(id int) error
 	//UpdateInventoryList(inventory []Inventory, userID int) error
 
 	GetByUserID(userID int) ([]db.Inventory, error)
 	GetByID(id int, userID int) (*db.Inventory, error)
+	GetByIDByAdmin(id int) (*db.Inventory, error)
 	GetAll() ([]db.Inventory, error)
 }
 
@@ -66,6 +68,16 @@ func (is *inventoryService) GetByID(id int, userID int) (*db.Inventory, error) {
 	return inv, nil
 }
 
+func (is *inventoryService) GetByIDByAdmin(id int) (*db.Inventory, error) {
+
+	inv, err := is.inventoryRepo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return inv, nil
+}
+
 func (is *inventoryService) GetAll() ([]db.Inventory, error) {
 	return is.inventoryRepo.GetAll()
 }
@@ -87,6 +99,18 @@ func (is *inventoryService) SoftDelete(id int, userID int) error {
 
 	if inv.UserID != userID {
 		return ErrorOperationNotPermitted
+	}
+
+	inv.IsDeleted = true
+	is.inventoryRepo.Upsert(inv)
+
+	return nil
+}
+
+func (is *inventoryService) SoftDeleteByAdmin(id int) error {
+	inv, err := is.inventoryRepo.GetByID(id)
+	if err != nil {
+		return err
 	}
 
 	inv.IsDeleted = true

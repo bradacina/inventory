@@ -94,6 +94,46 @@ func (app *app) adminAddInventory(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *app) adminDeleteInventory(w http.ResponseWriter, r *http.Request) {
+	invID, err := httphelp.ParseIDFromQueryString(r)
+	if err != nil {
+		log.Println(err)
+		httphelp.StatusCode(w, http.StatusInternalServerError)
+		return
+	}
+
+	err = app.inventoryService.SoftDeleteByAdmin(invID)
+	if err != nil {
+		log.Println("Error in adminDeleteInventory", err)
+		httphelp.StatusCode(w, http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin_list_inventories", http.StatusSeeOther)
+}
+
+func (app *app) adminEditInventory(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		invID, err := httphelp.ParseIDFromQueryString(r)
+		if err != nil {
+			log.Println(err)
+			httphelp.StatusCode(w, http.StatusInternalServerError)
+			return
+		}
+
+		inventory, err := app.inventoryService.GetByIDByAdmin(invID)
+		if err != nil {
+			log.Println(err)
+			httphelp.StatusCode(w, http.StatusNotFound)
+		}
+
+		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory, inventory)
+
+	} else if r.Method == http.MethodPost {
+
+	}
+}
+
 func parseInventoryFromRequest(r *http.Request) (*db.Inventory, error) {
 	err := r.ParseForm()
 

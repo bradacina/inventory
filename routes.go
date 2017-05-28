@@ -48,6 +48,21 @@ func registerRoutes(app *app) {
 				httphelp.GetPostHandleFunc(
 					app.adminAddInventory))))
 
+	http.HandleFunc("/admin_delete_inventory",
+		httphelp.AuthenticatedHandleFunc(
+			app,
+			httphelp.IsAdminHandleFunc(
+				httphelp.PostHandleFunc(
+					app.adminDeleteInventory))))
+
+	http.HandleFunc("/admin_edit_inventory",
+		httphelp.AuthenticatedHandleFunc(
+			app,
+			httphelp.IsAdminHandleFunc(
+				httphelp.GetPostHandleFunc(
+					app.adminEditInventory))))
+
+
 	http.HandleFunc("/secure", httphelp.AuthenticatedHandleFunc(app, app.secure))
 	log.Println("Done")
 }

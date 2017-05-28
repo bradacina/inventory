@@ -21,7 +21,13 @@
             <td>{{.Name}}</td>
             <td>{{.TotalItems}}</td>
             <td>{{.IsDeleted}}</td>
-            <td><a href="/admin_edit_inventory?id={{.ID}}">Edit</td>
+            <td>
+                <a href="/admin_edit_inventory?id={{.ID}}">Edit</a>
+                <form action="/admin_delete_inventory" method="post">
+                <input type="hidden" name="id" value="{{.ID}}">
+                <input type="submit" value="Delete">
+                </form>
+            </td>
         </tr>
         {{end}}
 </table>
