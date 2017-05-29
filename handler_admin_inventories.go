@@ -133,12 +133,10 @@ func (app *app) adminEditInventory(w http.ResponseWriter, r *http.Request) {
 			httphelp.StatusCode(w, http.StatusNotFound)
 		}
 
-		//xxx := interface{}(*inventory)
-		//invEdit, _ := xxx.(AdminInventoryEdit)
-		invEdit := (AdminInventoryEdit)(*inventory)
+		invEdit, _ := mapToAdminInventoryEdit(inventory)
 
 		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory,
-			adminViewInventoryEdit{&invEdit, "/admin_edit_inventory"})
+			adminViewInventoryEdit{invEdit, "/admin_edit_inventory"})
 
 	} else if r.Method == http.MethodPost {
 
@@ -183,6 +181,20 @@ func mapToInventory(inv *AdminInventoryEdit) (*db.Inventory, error) {
 			Quantity: inv.Items[i].Quantity,
 			SKU:      inv.Items[i].SKU,
 			Title:    inv.Items[i].Title})
+	}
+
+	return &inventory, nil
+}
+
+func mapToAdminInventoryEdit(inv *db.Inventory) (*AdminInventoryEdit, error) {
+	inventory := AdminInventoryEdit{
+		ID:        inv.ID,
+		UserID:    inv.UserID,
+		IsDeleted: inv.IsDeleted,
+		Name:      inv.Name}
+
+	for _, el := range inv.Items {
+		inventory.Items = append(inventory.Items, AdminInventoryItemEdit(el))
 	}
 
 	return &inventory, nil
