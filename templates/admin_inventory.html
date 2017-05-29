@@ -1,72 +1,40 @@
 {{template "header.html"}}
 
-<form method="POST" action="/admin_add_inventory">
+<form method="POST" action="{{.Action}}">
+    <input type="hidden" name="ID" value="{{.ID}}">
+
     <label for="Name">Name</label>
-    <input type="text" name="Name">
+    <input type="text" name="Name" value="{{.Name}}">
 
     <br />
 
     <label for="UserID">UserID</label>
-    <input type="number" name="UserID" value="">
+    <input type="number" name="UserID" value="{{.UserID}}">
 
     <br />
     <h3>Items</h3>
         <ul>
+            {{range $index, $element := .Items}}
             <li>
-                <label for="Items.0.Title">Title</label>
-                <input type="text" name="Items.0.Title" value="">
+                <label for="Items.{{$index}}.Title">Title</label>
+                <input type="text" name="Items.{{$index}}.Title" value="{{$element.Title}}">
                 <br/>
 
-                <label for="Items.0.SKU">SKU</label>
-                <input type="text" name="Items.0.SKU" value="">
+                <label for="Items.{{$index}}.SKU">SKU</label>
+                <input type="text" name="Items.{{$index}}.SKU" value="{{$element.SKU}}">
                 <br />
 
-                <label for="Items.0.Barcode">Barcode</label>
-                <input type="text" name="Items.0.Barcode" value="">
+                <label for="Items.{{$index}}.Barcode">Barcode</label>
+                <input type="text" name="Items.{{$index}}.Barcode" value="{{$element.Barcode}}">
                 <br />
 
-                <label for="Items.0.Quantity">Quantity</label>
-                <input type="number" name="Items.0.Quantity" value="">
-                <br />
-            </li>
-
-            <li>
-                <label for="Items.1.Title">Title</label>
-                <input type="text" name="Items.1.Title" value="">
-                <br/>
-
-                <label for="Items.1.SKU">SKU</label>
-                <input type="text" name="Items.1.SKU" value="">
-                <br />
-
-                <label for="Items.1.Barcode">Barcode</label>
-                <input type="text" name="Items.1.Barcode" value="">
-                <br />
-
-                <label for="Items.1.Quantity">Quantity</label>
-                <input type="number" name="Items.1.Quantity" value="">
+                <label for="Items.{{$index}}.Quantity">Quantity</label>
+                <input type="number" name="Items.{{$index}}.Quantity" value="{{$element.Quantity}}">
                 <br />
             </li>
-
-            <li>
-                <label for="Items.2.Title">Title</label>
-                <input type="text" name="Items.2.Title" value="">
-                <br/>
-
-                <label for="Items.2.SKU">SKU</label>
-                <input type="text" name="Items.2.SKU" value="">
-                <br />
-
-                <label for="Items.2.Barcode">Barcode</label>
-                <input type="text" name="Items.2.Barcode" value="">
-                <br />
-
-                <label for="Items.2.Quantity">Quantity</label>
-                <input type="number" name="Items.2.Quantity" value="">
-                <br />
-            </li>
+            {{end}}
         </ul>
-<input type="submit">Save</input>
+<input type="submit">
 </form>
 
 {{template "footer.html"}}

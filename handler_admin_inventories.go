@@ -18,15 +18,20 @@ type adminInventoryListRecord struct {
 	IsDeleted  bool
 }
 
-type adminInventoryEdit struct {
+type adminViewInventoryEdit struct {
+	*AdminInventoryEdit
+	Action string
+}
+
+type AdminInventoryEdit struct {
 	ID        int
-	Name      string
 	UserID    int
-	Items     []adminInventoryItemEdit
+	Name      string
+	Items     []AdminInventoryItemEdit
 	IsDeleted bool
 }
 
-type adminInventoryItemEdit struct {
+type AdminInventoryItemEdit struct {
 	Quantity int
 	SKU      string
 	Title    string
@@ -75,7 +80,8 @@ func (app *app) adminListInventories(w http.ResponseWriter, r *http.Request) {
 
 func (app *app) adminAddInventory(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory, adminInventoryEdit{})
+		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory,
+			adminViewInventoryEdit{&AdminInventoryEdit{}, "/admin_add_inventory"})
 		return
 	} else if r.Method == http.MethodPost {
 		inventory, err := parseInventoryFromRequest(r)
@@ -127,7 +133,12 @@ func (app *app) adminEditInventory(w http.ResponseWriter, r *http.Request) {
 			httphelp.StatusCode(w, http.StatusNotFound)
 		}
 
-		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory, inventory)
+		//xxx := interface{}(*inventory)
+		//invEdit, _ := xxx.(AdminInventoryEdit)
+		invEdit := (AdminInventoryEdit)(*inventory)
+
+		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory,
+			adminViewInventoryEdit{&invEdit, "/admin_edit_inventory"})
 
 	} else if r.Method == http.MethodPost {
 
@@ -141,7 +152,7 @@ func parseInventoryFromRequest(r *http.Request) (*db.Inventory, error) {
 		return nil, err
 	}
 
-	var inv adminInventoryEdit
+	var inv AdminInventoryEdit
 
 	err = decoder.Decode(&inv, r.PostForm)
 
@@ -159,7 +170,7 @@ func parseInventoryFromRequest(r *http.Request) (*db.Inventory, error) {
 	return inventory, nil
 }
 
-func mapToInventory(inv *adminInventoryEdit) (*db.Inventory, error) {
+func mapToInventory(inv *AdminInventoryEdit) (*db.Inventory, error) {
 	inventory := db.Inventory{
 		ID:        inv.ID,
 		UserID:    inv.UserID,
