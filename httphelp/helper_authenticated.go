@@ -17,6 +17,7 @@ const loggedInUserKey = loggedInUserKeyType("loggedInUserKey")
 type AuthDependencyInjector interface {
 	GetCookieAuthentication() *logincookie.CookieAuthentication
 	GetUserService() services.UserServicer
+	GetLoginRoute() string
 }
 
 func AuthenticatedHandler(authDI AuthDependencyInjector, handler http.Handler) http.HandlerFunc {
@@ -34,13 +35,13 @@ func makeAuthHandler(authDI AuthDependencyInjector,
 		loginInfo, err := authDI.GetCookieAuthentication().GetLoginCookie(r)
 		if err != nil {
 			log.Println("Login cookie not present. Redirecting to login")
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, authDI.GetLoginRoute(), http.StatusSeeOther)
 			return
 		}
 		user, err := authDI.GetUserService().GetByEmail(loginInfo.Username)
 		if err != nil {
 			log.Println("Login cookie contained non existant username")
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, authDI.GetLoginRoute(), http.StatusSeeOther)
 			return
 		}
 

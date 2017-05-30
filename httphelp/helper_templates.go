@@ -33,6 +33,7 @@ func ServeTemplate(w http.ResponseWriter, name TemplateName, values interface{})
 	err := globalTemplate.ExecuteTemplate(w, string(name), values)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError)
 	}
 }

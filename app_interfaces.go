@@ -12,3 +12,7 @@ func (app *app) GetCookieAuthentication() *logincookie.CookieAuthentication {
 func (app *app) GetUserService() services.UserServicer {
 	return app.userService
 }
+
+func (app *app) GetLoginRoute() string {
+	return RouteLogin
+}

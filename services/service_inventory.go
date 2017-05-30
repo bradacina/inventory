@@ -25,6 +25,7 @@ type InventoryServicer interface {
 	Create(inventory *db.Inventory, userID int) error
 	CreateByAdmin(inventory *db.Inventory) error
 	Update(inventory *db.Inventory, userID int) error
+	UpdateByAdmin(inventory *db.Inventory) error
 
 	SoftDelete(id int, userID int) error
 	SoftDeleteByAdmin(id int) error
@@ -189,6 +190,21 @@ func (is *inventoryService) Update(inventory *db.Inventory, userID int) error {
 	if existingInv.UserID != inventory.UserID ||
 		existingInv.UserID != userID {
 		return ErrorOperationNotPermitted
+	}
+
+	is.inventoryRepo.Upsert(inventory)
+
+	return nil
+}
+
+func (is *inventoryService) UpdateByAdmin(inventory *db.Inventory) error {
+	if inventory.ID <= 0 {
+		return ErrorNotFound
+	}
+
+	_, err := is.inventoryRepo.GetByID(inventory.ID)
+	if err != nil {
+		return ErrorNotFound
 	}
 
 	is.inventoryRepo.Upsert(inventory)

@@ -1,4 +1,5 @@
-- finish handler_admin_inventories
+- finish admin edit user
 - check and then increase unit test coverage
-- parse incoming new inventory
-- put route names and route paths in a map
+- front end vue.js for admin
+- add expiry time to login cookie and check for expiration
+- add csrf protection

@@ -45,9 +45,11 @@ func newApp() *app {
 		cookieAuth}
 }
 
-func main() {
+func init() {
 	log.SetFlags(log.Ldate | log.Lshortfile)
+}
 
+func main() {
 	app := newApp()
 	registerRoutes(app)
 

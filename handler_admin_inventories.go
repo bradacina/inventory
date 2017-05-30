@@ -18,20 +18,22 @@ type adminInventoryListRecord struct {
 	IsDeleted  bool
 }
 
-type adminViewInventoryEdit struct {
-	*AdminInventoryEdit
+type adminAddOrEditInventoryTemplateValues struct {
+	*AdminEditInventoryRecord
+
 	Action string
+	Error  string
 }
 
-type AdminInventoryEdit struct {
+type AdminEditInventoryRecord struct {
 	ID        int
 	UserID    int
 	Name      string
-	Items     []AdminInventoryItemEdit
+	Items     []AdminEditInventoryItemRecord
 	IsDeleted bool
 }
 
-type AdminInventoryItemEdit struct {
+type AdminEditInventoryItemRecord struct {
 	Quantity int
 	SKU      string
 	Title    string
@@ -81,13 +83,13 @@ func (app *app) adminListInventories(w http.ResponseWriter, r *http.Request) {
 func (app *app) adminAddInventory(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory,
-			adminViewInventoryEdit{&AdminInventoryEdit{}, "/admin_add_inventory"})
+			adminAddOrEditInventoryTemplateValues{&AdminEditInventoryRecord{}, RouteAdminAddInventory, ""})
 		return
 	} else if r.Method == http.MethodPost {
 		inventory, err := parseInventoryFromRequest(r)
 		if err != nil {
 			log.Println(err)
-			http.Redirect(w, r, "/admin_list_inventories", http.StatusSeeOther)
+			http.Redirect(w, r, RouteAdminListInventories, http.StatusSeeOther)
 			return
 		}
 
@@ -96,7 +98,7 @@ func (app *app) adminAddInventory(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 
-		http.Redirect(w, r, "/admin_list_inventories", http.StatusSeeOther)
+		http.Redirect(w, r, RouteAdminListInventories, http.StatusSeeOther)
 	}
 }
 
@@ -115,7 +117,7 @@ func (app *app) adminDeleteInventory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/admin_list_inventories", http.StatusSeeOther)
+	http.Redirect(w, r, RouteAdminListInventories, http.StatusSeeOther)
 }
 
 func (app *app) adminEditInventory(w http.ResponseWriter, r *http.Request) {
@@ -133,13 +135,27 @@ func (app *app) adminEditInventory(w http.ResponseWriter, r *http.Request) {
 			httphelp.StatusCode(w, http.StatusNotFound)
 		}
 
-		invEdit, _ := mapToAdminInventoryEdit(inventory)
+		invEdit, _ := mapToAdminEditInventoryRecord(inventory)
 
 		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory,
-			adminViewInventoryEdit{invEdit, "/admin_edit_inventory"})
+			adminAddOrEditInventoryTemplateValues{invEdit, RouteAdminEditInventory, ""})
 
 	} else if r.Method == http.MethodPost {
+		inv, err := parseInventoryFromRequest(r)
+		if err != nil {
+			log.Println(err)
+			httphelp.StatusCode(w, http.StatusInternalServerError)
+			return
+		}
 
+		err = app.inventoryService.UpdateByAdmin(inv)
+		if err != nil {
+			log.Println(err)
+			httphelp.StatusCode(w, http.StatusNotFound)
+			return
+		}
+
+		http.Redirect(w, r, RouteAdminListInventories, http.StatusSeeOther)
 	}
 }
 
@@ -150,15 +166,13 @@ func parseInventoryFromRequest(r *http.Request) (*db.Inventory, error) {
 		return nil, err
 	}
 
-	var inv AdminInventoryEdit
+	var inv AdminEditInventoryRecord
 
 	err = decoder.Decode(&inv, r.PostForm)
 
 	if err != nil {
 		return nil, err
 	}
-
-	log.Printf("%v\r\n", inv)
 
 	inventory, err := mapToInventory(&inv)
 	if err != nil {
@@ -168,7 +182,7 @@ func parseInventoryFromRequest(r *http.Request) (*db.Inventory, error) {
 	return inventory, nil
 }
 
-func mapToInventory(inv *AdminInventoryEdit) (*db.Inventory, error) {
+func mapToInventory(inv *AdminEditInventoryRecord) (*db.Inventory, error) {
 	inventory := db.Inventory{
 		ID:        inv.ID,
 		UserID:    inv.UserID,
@@ -176,25 +190,21 @@ func mapToInventory(inv *AdminInventoryEdit) (*db.Inventory, error) {
 		Name:      inv.Name}
 
 	for i := range inv.Items {
-		inventory.Items = append(inventory.Items, db.Item{
-			Barcode:  inv.Items[i].Barcode,
-			Quantity: inv.Items[i].Quantity,
-			SKU:      inv.Items[i].SKU,
-			Title:    inv.Items[i].Title})
+		inventory.Items = append(inventory.Items, db.Item(inv.Items[i]))
 	}
 
 	return &inventory, nil
 }
 
-func mapToAdminInventoryEdit(inv *db.Inventory) (*AdminInventoryEdit, error) {
-	inventory := AdminInventoryEdit{
+func mapToAdminEditInventoryRecord(inv *db.Inventory) (*AdminEditInventoryRecord, error) {
+	inventory := AdminEditInventoryRecord{
 		ID:        inv.ID,
 		UserID:    inv.UserID,
 		IsDeleted: inv.IsDeleted,
 		Name:      inv.Name}
 
 	for _, el := range inv.Items {
-		inventory.Items = append(inventory.Items, AdminInventoryItemEdit(el))
+		inventory.Items = append(inventory.Items, AdminEditInventoryItemRecord(el))
 	}
 
 	return &inventory, nil

@@ -6,7 +6,6 @@ yyyy  View | Delete
 zzzz  View | Delete
 
 Add New Inventory
-Save
 -----------------------
 
 

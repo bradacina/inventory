@@ -23,14 +23,14 @@ func (app *app) adminDeleteUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.Atoi(requestUserID)
 	if err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/admin_list_users", http.StatusSeeOther)
+		http.Redirect(w, r, RouteAdminListUsers, http.StatusSeeOther)
 		return
 	}
 
 	user, err := app.userService.GetByID(userID)
 	if err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/admin_list_users", http.StatusSeeOther)
+		http.Redirect(w, r, RouteAdminListUsers, http.StatusSeeOther)
 		return
 	}
 
@@ -40,10 +40,10 @@ func (app *app) adminDeleteUser(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	http.Redirect(w, r, "/admin_list_users", http.StatusSeeOther)
+	http.Redirect(w, r, RouteAdminListUsers, http.StatusSeeOther)
 }
 
 func (app *app) adminEditUser(w http.ResponseWriter, r *http.Request) {
 	// todo: implement
-	http.Redirect(w, r, "/admin_list_users", http.StatusSeeOther)
+	http.Redirect(w, r, RouteAdminListUsers, http.StatusSeeOther)
 }
