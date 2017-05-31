@@ -1,11 +1,21 @@
-package main
+package login
 
 import (
 	"net/http"
 
+	"github.com/bradacina/inventory/deps"
 	"github.com/bradacina/inventory/httphelp"
 	"github.com/bradacina/inventory/logincookie"
 )
+
+const (
+	fieldEmail    = "email"
+	fieldPassword = "password"
+)
+
+type LoginHandler struct {
+	*deps.Deps
+}
 
 type loginForm struct {
 	Email    string
@@ -17,10 +27,14 @@ type loginFormFeedback struct {
 	Errors []string
 }
 
-func (app *app) login(w http.ResponseWriter, r *http.Request) {
-	login, err := app.cookieAuth.GetLoginCookie(r)
+func NewHandler(deps *deps.Deps) *LoginHandler {
+	return &LoginHandler{deps}
+}
+
+func (lh *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
+	login, err := lh.CookieAuth.GetLoginCookie(r)
 	if err == nil {
-		app.cookieAuth.SetLoginCookie(w, login)
+		lh.CookieAuth.SetLoginCookie(w, login)
 		http.Redirect(w, r, "/secure", http.StatusSeeOther)
 		return
 	}
@@ -35,7 +49,7 @@ func (app *app) login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		user, err := app.userService.ValidateCredentials(form.Email, form.Password)
+		user, err := lh.UserService.ValidateCredentials(form.Email, form.Password)
 		if err != nil {
 			feedback := loginFormFeedback{Errors: []string{err.Error()}}
 			feedback.Email = form.Email
@@ -51,7 +65,7 @@ func (app *app) login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		loginInfo := logincookie.LoginInfo{Username: user.Email, ID: user.ID, IsAdmin: user.IsAdmin}
-		app.cookieAuth.SetLoginCookie(w, &loginInfo)
+		lh.CookieAuth.SetLoginCookie(w, &loginInfo)
 		http.Redirect(w, r, "/secure", http.StatusSeeOther)
 
 	} else {

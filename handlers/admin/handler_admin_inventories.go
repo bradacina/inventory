@@ -1,4 +1,4 @@
-package main
+package admin
 
 import (
 	"log"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/bradacina/inventory/db"
 	"github.com/bradacina/inventory/httphelp"
+	"github.com/bradacina/inventory/routing"
 	"github.com/gorilla/schema"
 )
 
@@ -46,14 +47,14 @@ func init() {
 	decoder = schema.NewDecoder()
 }
 
-func (app *app) adminListInventories(w http.ResponseWriter, r *http.Request) {
-	invs, err := app.inventoryService.GetAll()
+func (ah *AdminHandler) ListInventories(w http.ResponseWriter, r *http.Request) {
+	invs, err := ah.InventoryService.GetAll()
 	if err != nil {
 		log.Panicln(err)
 		return
 	}
 
-	users, err := app.userService.GetAll()
+	users, err := ah.UserService.GetAll()
 	if err != nil {
 		log.Println(err)
 	}
@@ -80,29 +81,29 @@ func (app *app) adminListInventories(w http.ResponseWriter, r *http.Request) {
 	httphelp.ServeTemplate(w, httphelp.TemplateAdminListInventories, displayInvs)
 }
 
-func (app *app) adminAddInventory(w http.ResponseWriter, r *http.Request) {
+func (ah *AdminHandler) AddInventory(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory,
-			adminAddOrEditInventoryTemplateValues{&AdminEditInventoryRecord{}, RouteAdminAddInventory, ""})
+			adminAddOrEditInventoryTemplateValues{&AdminEditInventoryRecord{}, routing.RouteAdminAddInventory, ""})
 		return
 	} else if r.Method == http.MethodPost {
 		inventory, err := parseInventoryFromRequest(r)
 		if err != nil {
 			log.Println(err)
-			http.Redirect(w, r, RouteAdminListInventories, http.StatusSeeOther)
+			http.Redirect(w, r, routing.RouteAdminListInventories, http.StatusSeeOther)
 			return
 		}
 
-		err = app.inventoryService.CreateByAdmin(inventory)
+		err = ah.InventoryService.CreateByAdmin(inventory)
 		if err != nil {
 			log.Println(err)
 		}
 
-		http.Redirect(w, r, RouteAdminListInventories, http.StatusSeeOther)
+		http.Redirect(w, r, routing.RouteAdminListInventories, http.StatusSeeOther)
 	}
 }
 
-func (app *app) adminDeleteInventory(w http.ResponseWriter, r *http.Request) {
+func (ah *AdminHandler) DeleteInventory(w http.ResponseWriter, r *http.Request) {
 	invID, err := httphelp.ParseIDFromQueryString(r)
 	if err != nil {
 		log.Println(err)
@@ -110,17 +111,17 @@ func (app *app) adminDeleteInventory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.inventoryService.SoftDeleteByAdmin(invID)
+	err = ah.InventoryService.SoftDeleteByAdmin(invID)
 	if err != nil {
 		log.Println("Error in adminDeleteInventory", err)
 		httphelp.StatusCode(w, http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, RouteAdminListInventories, http.StatusSeeOther)
+	http.Redirect(w, r, routing.RouteAdminListInventories, http.StatusSeeOther)
 }
 
-func (app *app) adminEditInventory(w http.ResponseWriter, r *http.Request) {
+func (ah *AdminHandler) EditInventory(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		invID, err := httphelp.ParseIDFromQueryString(r)
 		if err != nil {
@@ -129,7 +130,7 @@ func (app *app) adminEditInventory(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		inventory, err := app.inventoryService.GetByIDByAdmin(invID)
+		inventory, err := ah.InventoryService.GetByIDByAdmin(invID)
 		if err != nil {
 			log.Println(err)
 			httphelp.StatusCode(w, http.StatusNotFound)
@@ -138,7 +139,7 @@ func (app *app) adminEditInventory(w http.ResponseWriter, r *http.Request) {
 		invEdit, _ := mapToAdminEditInventoryRecord(inventory)
 
 		httphelp.ServeTemplate(w, httphelp.TemplateAdminInventory,
-			adminAddOrEditInventoryTemplateValues{invEdit, RouteAdminEditInventory, ""})
+			adminAddOrEditInventoryTemplateValues{invEdit, routing.RouteAdminEditInventory, ""})
 
 	} else if r.Method == http.MethodPost {
 		inv, err := parseInventoryFromRequest(r)
@@ -148,14 +149,14 @@ func (app *app) adminEditInventory(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = app.inventoryService.UpdateByAdmin(inv)
+		err = ah.InventoryService.UpdateByAdmin(inv)
 		if err != nil {
 			log.Println(err)
 			httphelp.StatusCode(w, http.StatusNotFound)
 			return
 		}
 
-		http.Redirect(w, r, RouteAdminListInventories, http.StatusSeeOther)
+		http.Redirect(w, r, routing.RouteAdminListInventories, http.StatusSeeOther)
 	}
 }
 

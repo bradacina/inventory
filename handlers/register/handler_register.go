@@ -1,10 +1,11 @@
-package main
+package register
 
 import (
 	"log"
 	"net/http"
 	"strings"
 
+	"github.com/bradacina/inventory/deps"
 	"github.com/bradacina/inventory/httphelp"
 )
 
@@ -23,6 +24,10 @@ const (
 	symbols      = "`~!@#$%^&*()_+-=<>,./?:;'\""
 )
 
+type RegisterHandler struct {
+	*deps.Deps
+}
+
 type registerForm struct {
 	Password  string
 	Password2 string
@@ -35,8 +40,12 @@ type registerFormFeedback struct {
 	Errors []string
 }
 
-func (app *app) register(w http.ResponseWriter, r *http.Request) {
-	app.cookieAuth.DeleteLoginCookie(w)
+func NewHandler(deps *deps.Deps) *RegisterHandler {
+	return &RegisterHandler{deps}
+}
+
+func (rh *RegisterHandler) Register(w http.ResponseWriter, r *http.Request) {
+	rh.CookieAuth.DeleteLoginCookie(w)
 	if r.Method == http.MethodGet {
 		httphelp.ServeTemplate(w, httphelp.TemplateRegister, nil)
 
@@ -47,7 +56,7 @@ func (app *app) register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err := app.userService.RegisterUser(regForm.Email, regForm.Password)
+		err := rh.UserService.RegisterUser(regForm.Email, regForm.Password)
 		if err != nil {
 			feedback := registerFormFeedback{Errors: []string{"That email is already in use"}}
 			httphelp.ServeTemplate(w, httphelp.TemplateRegister, feedback)
