@@ -18,8 +18,13 @@
             <td>{{.Email}}</td>
             <td>{{.IsAdmin}}</td>
             <td>{{.IsDeleted}}</td>
-            <td>Edit</td>
-            <td>Delete</td>
+            <td><a href="/admin_edit_user?userId={{.ID}}">Edit</a></td>
+            <td>
+                <form action="/admin_delete_user" method="POST">
+                    <input type="hidden" name="userId" value="{{.ID}}">
+                    <input type="submit" value="Delete">
+                </form>
+            </td>
         </tr>
         {{end}}
 </table>

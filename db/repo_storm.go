@@ -55,10 +55,6 @@ func (ur *stormUserRepo) Upsert(user *User) error {
 		panic("Database is not instantiated")
 	}
 
-	if user.ID > 0 {
-		return ur.db.Update(user)
-	}
-
 	return ur.db.Save(user)
 }
 
@@ -108,10 +104,6 @@ func (ir *stormInventoryRepo) GetAll() ([]Inventory, error) {
 func (ir *stormInventoryRepo) Upsert(inventory *Inventory) error {
 	if ir.db == nil {
 		panic("Database is not instantiated")
-	}
-
-	if inventory.ID > 0 {
-		return ir.db.Update(inventory)
 	}
 
 	return ir.db.Save(inventory)

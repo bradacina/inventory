@@ -1,11 +1,16 @@
-{{template "header.html"}}
-{{range .Errors}} <li>{{.}}</li> {{end}}
+{{template "header.html"}} {{range .Errors}}
+<li>{{.}}</li> {{end}}
 <form method="POST" action="/login">
-    <label>Email</label>
-    <input type="email" required name="email" value={{.Email}}>
-    <label>Password</label>
-    <input type="password" name="password" required>
-
+    <ul>
+        <li>
+            <label>Email</label>
+            <input type="email" required name="email" value={{.Email}}>
+        </li>
+        <li>
+            <label>Password</label>
+            <input type="password" name="password" required>
+        </li>
+    </ul>
     <input type="submit" value="Login">
 </form>
 {{template "footer.html"}}

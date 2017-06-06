@@ -214,15 +214,6 @@ func TestInventoryRepo(t *testing.T) {
 		t.Error("Could not update an inventory record")
 	}
 
-	inv.ID = 23
-
-	err = ir.Upsert(&inv)
-	if err == nil {
-		t.Error("Expected to not be able to update an non existing inventory")
-	}
-
-	inv.ID = 1
-
 	_, err = ir.GetByID(1)
 	if err != nil {
 		t.Error("Could not retrieve inventory by ID, Error:", err)

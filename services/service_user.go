@@ -117,9 +117,17 @@ func (us *userService) UpdateByAdmin(user *db.User) error {
 		if err == nil {
 			return ErrorEmailInUse
 		}
+
+		existing.Email = user.Email
 	}
 
-	us.userRepo.Upsert(user)
+	existing.IsAdmin = user.IsAdmin
+	existing.IsDeleted = user.IsDeleted
+	err = us.userRepo.Upsert(existing)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
