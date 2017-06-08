@@ -1,4 +1,4 @@
-- finish admin edit user
+
 - check and then increase unit test coverage
 - front end vue.js for admin
 - add expiry time to login cookie and check for expiration
