@@ -20,7 +20,7 @@ func main() {
 	deps := deps.NewDeps()
 	registerRoutes(deps)
 
-	log.Println("Listening at https://localhost:9080")
+	log.Println("Listening at https://127.0.0.1:9080")
 	log.Fatal(http.ListenAndServeTLS(":9080", "cert/pub.key", "cert/priv.key", nil))
 
 	deps.Db.Close()
@@ -33,6 +33,8 @@ func registerRoutes(deps *deps.Deps) {
 	adminHandler := admin.NewHandler(deps)
 
 	log.Println("Setting up routes...")
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+
 	http.HandleFunc(routing.RouteRegister, registerHandler.Register)
 	http.HandleFunc(routing.RouteLogin, loginHandler.Login)
 	http.HandleFunc(routing.RouteLogout, loginHandler.Logout)

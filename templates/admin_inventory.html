@@ -1,5 +1,9 @@
 {{template "header.html"}}
 
+<div id="app">
+    <inventory-items-list/>
+</div>
+
 <form method="POST" action="{{.Action}}">
     <input type="hidden" name="ID" value="{{.ID}}">
 
@@ -13,28 +17,28 @@
 
     <br />
     <h3>Items</h3>
-        <ul>
-            {{range $index, $element := .Items}}
-            <li>
-                <label for="Items.{{$index}}.Title">Title</label>
-                <input type="text" name="Items.{{$index}}.Title" value="{{$element.Title}}">
-                <br/>
-
-                <label for="Items.{{$index}}.SKU">SKU</label>
-                <input type="text" name="Items.{{$index}}.SKU" value="{{$element.SKU}}">
-                <br />
-
-                <label for="Items.{{$index}}.Barcode">Barcode</label>
-                <input type="text" name="Items.{{$index}}.Barcode" value="{{$element.Barcode}}">
-                <br />
-
-                <label for="Items.{{$index}}.Quantity">Quantity</label>
-                <input type="number" name="Items.{{$index}}.Quantity" value="{{$element.Quantity}}">
-                <br />
-            </li>
-            {{end}}
-        </ul>
+    <inventory-items-list/>
 <input type="submit">
 </form>
+
+<script src="/static/vue.js"></script>
+<script src="/static/inventory-item.js"></script>
+<script src="/static/inventory-items-list.js"></script>
+<script src="/static/app.js"></script>
+<script>
+    var x =[
+    
+    {{range $index, $element := .Items}}
+    {
+        Title: {{.Title}},
+        Barcode: {{.Barcode}},
+        Quantity: {{.Quantity}},
+        SKU: {{.SKU}}
+    },
+    {{end}}        
+    
+    ];
+</script>
+
 
 {{template "footer.html"}}
