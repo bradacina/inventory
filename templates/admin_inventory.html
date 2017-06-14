@@ -1,44 +1,41 @@
 {{template "header.html"}}
 
-<div id="app">
-    <inventory-items-list/>
-</div>
-
 <form method="POST" action="{{.Action}}">
     <input type="hidden" name="ID" value="{{.ID}}">
-
     <label for="Name">Name</label>
     <input type="text" name="Name" value="{{.Name}}">
-
     <br />
-
     <label for="UserID">UserID</label>
     <input type="number" name="UserID" value="{{.UserID}}">
 
     <br />
     <h3>Items</h3>
-    <inventory-items-list/>
-<input type="submit">
+    <div id="app">
+        <inventory-items-list/>
+    </div>
+
+    <input type="submit">
 </form>
 
+<script>
+    window.inventoryItems = [
+        {{range $index, $element:= .Items }}
+        {{if ne $index 0}}, {{end }}
+        {
+            Title: {{.Title }},
+        Barcode: {{.Barcode }},
+        Quantity: {{.Quantity }},
+        SKU: {{.SKU }}
+        }
+        {{end }}        
+    
+    ];
+
+</script>
 <script src="/static/vue.js"></script>
 <script src="/static/inventory-item.js"></script>
 <script src="/static/inventory-items-list.js"></script>
 <script src="/static/app.js"></script>
-<script>
-    var x =[
-    
-    {{range $index, $element := .Items}}
-    {
-        Title: {{.Title}},
-        Barcode: {{.Barcode}},
-        Quantity: {{.Quantity}},
-        SKU: {{.SKU}}
-    },
-    {{end}}        
-    
-    ];
-</script>
 
 
 {{template "footer.html"}}
